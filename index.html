@@ -415,7 +415,9 @@ function normalize(d) {
   return { notes: arr(d.notes), events: arr(d.events), todos: arr(d.todos) };
 }
 
+const GH_OWNER = 'Larsen140', GH_REPO = 'lenas-tagebuch-daten'; // fest eingestellt
 let S = Object.assign({}, DEFAULTS, load(SET_KEY) || {});
+S.owner = GH_OWNER; S.repo = GH_REPO;
 let D = normalize(load(DATA_KEY));
 const live = list => list.filter(x => !x.deleted);
 
@@ -798,9 +800,7 @@ function openSettings(focus) {
       <div class="box">${toggleRow('sHint', 'Tagesübersicht', 'Zeigt oben heutige Termine & Aufgaben', S.todayHint)}</div>
     </div>
     <div class="group" id="syncGroup"><h3>Synchronisation (iPhone ↔ iPad)</h3>
-      <p class="hint">Alles wird in deinem privaten GitHub-Repository gespeichert. Auf jedem Gerät einmal dieselben Daten eintragen – fertig.</p>
-      <label class="field"><span>GitHub-Benutzername</span><input id="sOwner" value="${esc(S.owner)}" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="z. B. larsen123"></label>
-      <label class="field"><span>Daten-Repository</span><input id="sRepo" value="${esc(S.repo)}" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="z. B. lenas-tagebuch-daten"></label>
+      <p class="hint">Alles wird im privaten Repository <b>${esc(GH_OWNER)}/${esc(GH_REPO)}</b> gespeichert. Auf jedem Gerät einmal den Token eintragen – fertig.</p>
       <label class="field"><span>Token</span><input id="sToken" type="password" value="${esc(S.token)}" autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="off" placeholder="github_pat_…"></label>
       <button class="btn full" id="sConnect">Verbinden &amp; synchronisieren</button>
       <div class="sync-status" id="syncStatus"></div>
@@ -835,11 +835,10 @@ function openSettings(focus) {
   $('#sHint', sh).addEventListener('change', e => { S.todayHint = e.target.checked; saveSettings(); renderHint(); });
 
   $('#sConnect', sh).addEventListener('click', async () => {
-    S.owner = $('#sOwner', sh).value.trim().replace(/^@/, '');
-    S.repo = $('#sRepo', sh).value.trim().replace(/^.*github\.com\/[^/]+\//, '').replace(/\.git$/, '');
+    S.owner = GH_OWNER; S.repo = GH_REPO;
     S.token = $('#sToken', sh).value.trim();
     saveSettings();
-    if (!isConfigured()) { syncErr = 'Bitte alle drei Felder ausfüllen.'; updateSyncStatus(); return; }
+    if (!isConfigured()) { syncErr = 'Bitte den Token eintragen.'; updateSyncStatus(); return; }
     await sync(true);
   });
   const disc = $('#sDisconnect', sh);
@@ -931,7 +930,7 @@ async function ghError(r) {
   try { msg = (await r.json()).message || ''; } catch {}
   if (r.status === 401) return new Error('Token ungültig oder abgelaufen.');
   if (r.status === 403) return new Error('Keine Berechtigung – hat der Token „Contents: Read and write" für dieses Repository?');
-  if (r.status === 404) return new Error('Repository nicht gefunden – Benutzername, Repository-Name und Token-Zugriff prüfen.');
+  if (r.status === 404) return new Error('Kein Zugriff auf lenas-tagebuch-daten – hat der Token Zugriff auf dieses Repository?');
   return new Error(`GitHub-Fehler ${r.status}${msg ? ': ' + msg : ''}`);
 }
 async function pull() {
