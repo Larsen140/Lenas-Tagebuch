@@ -1,5 +1,5 @@
 // Lenas Tagebuch – Service Worker (offline nutzbar, Updates kommen automatisch)
-const CACHE = 'lenas-tagebuch-v1';
+const CACHE = 'lenas-tagebuch-v2';
 const ASSETS = [
   './',
   './index.html',
@@ -26,7 +26,7 @@ self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
   if (e.request.method !== 'GET' || url.origin !== self.location.origin) return;
   e.respondWith(
-    fetch(e.request)
+    fetch(e.request.url, { cache: 'no-cache' }) // immer beim Server nachfragen → Updates sofort
       .then(res => {
         if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)); }
         return res;

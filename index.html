@@ -1050,7 +1050,7 @@ setTab(['notes', 'cal', 'todo'].includes(S.tab) ? S.tab : 'notes');
 render(); setSyncState();
 if (isConfigured() && !LOCKED) sync(false);
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(r => r.update()).catch(() => {}));
 }
 })();
 </script>
