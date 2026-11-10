@@ -41,7 +41,9 @@ html[data-theme="light"],:root[data-theme="light"] body{background:color-mix(in 
   --blob-op:.35;
 }
 *{box-sizing:border-box}
-html{min-height:calc(100% + env(safe-area-inset-top) + env(safe-area-inset-bottom))}
+/* iOS-26-Workaround: nicht die Seite scrollt, sondern #scroller */
+html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+#scroller{position:fixed;inset:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;z-index:1}
 html,body{margin:0;min-height:100%;background:color-mix(in srgb,var(--a4) 55%,var(--bg3));color:var(--text);
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   font-size:var(--fs);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;
@@ -347,6 +349,7 @@ body.sheet-open .app{transform:scale(.955);filter:brightness(.8);opacity:.9}
   <div class="sparkles"></div>
 </div>
 
+<div id="scroller">
 <div class="app">
   <header class="top">
     <div>
@@ -409,6 +412,7 @@ body.sheet-open .app{transform:scale(.955);filter:brightness(.8);opacity:.9}
     </section>
   </main>
 </div>
+</div>
 
 <button class="fab" id="fab" aria-label="Neu">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
@@ -453,7 +457,7 @@ body.sheet-open .app{transform:scale(.955);filter:brightness(.8);opacity:.9}
 'use strict';
 
 /* ================= Helfer ================= */
-const APP_VERSION = '1.12'; // interne Nummer nur zum Erkennen von Updates – bei JEDEM Upload erhöhen
+const APP_VERSION = '1.13'; // interne Nummer nur zum Erkennen von Updates – bei JEDEM Upload erhöhen
 // Bei jedem Update oben einen Eintrag ergänzen. Typ: 'neu' | 'besser' | 'fix'
 const CHANGELOG = [
   { v: '1.7', date: '2026-11-10', items: [
@@ -637,7 +641,7 @@ function setTab(t) {
   $('#fab').classList.toggle('hidden', t === 'updates' || LOCKED_UI);
   if (t === 'updates') { renderUpdates(); S.seenLog = CHANGELOG[0].v; saveSettings(); $('.tabbar').classList.remove('has-new'); }
   if (changed) stagger($('#tab-' + t));
-  window.scrollTo({ top: 0 });
+  $('#scroller').scrollTo({ top: 0 });
 }
 $$('.tabbar button').forEach(b => b.addEventListener('click', () => setTab(b.dataset.tab)));
 let LOCKED_UI = false;
@@ -1221,16 +1225,6 @@ setInterval(() => { if (document.visibilityState === 'visible') checkForUpdate()
 setTimeout(checkForUpdate, 1500);
 // Adresse nach einem Update wieder aufräumen
 if (location.search) history.replaceState(null, '', location.pathname);
-
-/* ================= iOS-Fenster-Korrektur ================= */
-function fixIOSViewport() {
-  if (window.scrollY > 2) return;
-  window.scrollTo(0, 1);
-  requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo(0, 0)));
-}
-window.addEventListener('load', () => { setTimeout(fixIOSViewport, 50); setTimeout(fixIOSViewport, 400); });
-window.addEventListener('pageshow', () => setTimeout(fixIOSViewport, 50));
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') setTimeout(fixIOSViewport, 50); });
 
 /* ================= Start ================= */
 document.querySelectorAll('.ver').forEach(el => { el.textContent = 'Version ' + CHANGELOG[0].v; }); // angezeigte Version = neuester Eintrag
