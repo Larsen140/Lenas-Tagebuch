@@ -445,9 +445,11 @@ body.sheet-open .app{transform:scale(.955);filter:brightness(.8);opacity:.9}
 'use strict';
 
 /* ================= Helfer ================= */
-const APP_VERSION = '1.5';
+const APP_VERSION = '1.6';
 // Bei jedem Update oben einen Eintrag ergänzen. Typ: 'neu' | 'besser' | 'fix'
 const CHANGELOG = [
+  { v: '1.6', date: '2026-11-10', items: [
+    ['fix', 'Updates kommen jetzt automatisch an – die App muss dafür nicht mehr geschlossen werden.'] ] },
   { v: '1.5', date: '2026-11-10', items: [
     ['besser', 'Die App läuft flüssiger – vor allem beim Scrollen.'],
     ['besser', 'Einträge werden schneller zwischen iPhone und iPad synchronisiert.'],
@@ -584,6 +586,7 @@ function closeSheet() {
   $('#sheetLayer').classList.remove('open');
   document.body.classList.remove('sheet-open');
   if (document.activeElement) document.activeElement.blur();
+  if (pendingUpdate) setTimeout(applyUpdate, 500);
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });
 
@@ -1176,6 +1179,32 @@ const LOCKED = (() => {
   LOCKED_UI = true;
   return true;
 })();
+
+/* ================= Automatische Updates ================= */
+let pendingUpdate = null, lastCheck = 0;
+const newer = (a, b) => { const x = String(a).split('.').map(Number), y = String(b).split('.').map(Number);
+  for (let i = 0; i < Math.max(x.length, y.length); i++) { if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0); } return false; };
+async function checkForUpdate() {
+  if (!navigator.onLine || Date.now() - lastCheck < 15000) return;
+  lastCheck = Date.now();
+  try {
+    const r = await fetch('index.html?check=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) return;
+    const m = (await r.text()).match(/const APP_VERSION = '([\d.]+)'/);
+    if (m && newer(m[1], APP_VERSION)) { pendingUpdate = m[1]; applyUpdate(); }
+  } catch {}
+}
+function applyUpdate() {
+  if (!pendingUpdate) return;
+  if (document.body.classList.contains('sheet-open')) return; // nicht stören, während etwas offen ist
+  toast('✨ Update auf Version ' + pendingUpdate + ' …');
+  setTimeout(() => location.replace(location.pathname + '?v=' + pendingUpdate), 700);
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkForUpdate(); });
+setInterval(() => { if (document.visibilityState === 'visible') checkForUpdate(); }, 60 * 1000);
+setTimeout(checkForUpdate, 3000);
+// Adresse nach einem Update wieder aufräumen
+if (location.search) history.replaceState(null, '', location.pathname);
 
 /* ================= Start ================= */
 document.querySelectorAll('.ver').forEach(el => { el.textContent = 'Version ' + APP_VERSION; });
