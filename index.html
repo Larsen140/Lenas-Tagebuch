@@ -29,20 +29,19 @@ document.documentElement.setAttribute('data-theme',d?'dark':'light');}catch(e){d
   --glass-border:rgba(160,210,255,.20); --glass-hi:rgba(255,255,255,.12);
   --input:rgba(255,255,255,.07); --shadow:0 12px 40px rgba(0,8,35,.55);
   --title-grad:linear-gradient(90deg,#ffffff 0%,var(--a3) 40%,var(--a2) 70%,#ffffff 100%);
-  --blob-op:.5;
+  --blob-op:.5; --base:color-mix(in srgb,var(--a4) 28%,#030818);
 }
-html[data-theme="light"],:root[data-theme="light"] body{background:color-mix(in srgb,var(--a2) 35%,var(--bg))}
 :root[data-theme="light"]{
   --bg:color-mix(in srgb,var(--a3) 45%,#f4f8ff); --bg2:color-mix(in srgb,var(--a2) 40%,#eef4ff); --bg3:color-mix(in srgb,var(--a3) 70%,#ffffff); --text:#0b1733; --muted:rgba(20,40,80,.58);
   --glass:rgba(255,255,255,calc(var(--glass-alpha) + .12)); --glass-strong:rgba(250,252,255,.86);
   --glass-border:rgba(255,255,255,.75); --glass-hi:rgba(255,255,255,.7);
   --input:rgba(255,255,255,.6); --shadow:0 10px 30px rgba(40,90,170,.16);
   --title-grad:linear-gradient(90deg,var(--a4) 0%,var(--a1) 50%,var(--a4) 100%);
-  --blob-op:.35;
+  --blob-op:.35; --base:color-mix(in srgb,var(--a3) 55%,#ffffff);
 }
 *{box-sizing:border-box}
 html{min-height:calc(100% + env(safe-area-inset-top) + env(safe-area-inset-bottom))}
-html,body{margin:0;min-height:100%;background:color-mix(in srgb,var(--a4) 55%,var(--bg3));color:var(--text);
+html,body{margin:0;min-height:100%;background:var(--base);color:var(--text);
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   font-size:var(--fs);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;
   -webkit-text-size-adjust:100%;transition:background .4s}
@@ -341,7 +340,7 @@ body.sheet-open .app{transform:scale(.955);filter:brightness(.8);opacity:.9}
 ::placeholder{color:var(--muted);opacity:.85}
 /* Ladebildschirm */
 #splash{position:fixed;top:-200px;bottom:-200px;left:0;right:0;z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
-  background:radial-gradient(60% 45% at 50% 50%,color-mix(in srgb,var(--a1) 45%,transparent),transparent 70%),linear-gradient(165deg,var(--bg2),var(--bg3) 50%,var(--bg));
+  background:radial-gradient(55% 32% at 50% 50%,color-mix(in srgb,var(--a1) 50%,transparent),transparent 72%),var(--base);
   transition:opacity .4s ease,visibility .4s}
 #splash.hide{opacity:0;visibility:hidden;pointer-events:none}
 #splash.instant{transition:none}
@@ -474,7 +473,7 @@ body.sheet-open .app{transform:scale(.955);filter:brightness(.8);opacity:.9}
 'use strict';
 
 /* ================= Helfer ================= */
-const APP_VERSION = '1.17'; // interne Nummer nur zum Erkennen von Updates – bei JEDEM Upload erhöhen
+const APP_VERSION = '1.18'; // interne Nummer nur zum Erkennen von Updates – bei JEDEM Upload erhöhen
 // Bei jedem Update oben einen Eintrag ergänzen. Typ: 'neu' | 'besser' | 'fix'
 const CHANGELOG = [
   { v: '1.8', date: '2026-11-10', items: [
@@ -577,7 +576,10 @@ function applySettings() {
   ['a1','a2','a3','a4'].forEach(k => r.style.setProperty('--' + k, a[k]));
   const dark = S.theme === 'dark' || (S.theme === 'system' && mq.matches);
   r.dataset.theme = dark ? 'dark' : 'light';
-  $('meta[name="theme-color"]').setAttribute('content', dark ? '#041033' : '#e6f0ff');
+  // Grundfarbe auch als Statusleisten-/Systemfarbe setzen (iOS malt den Startbalken in dieser Farbe)
+  requestAnimationFrame(() => { try { const c = document.createElement('canvas').getContext('2d'); c.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--base').trim() || '#030818'; c.fillRect(0, 0, 1, 1);
+    const d = c.getImageData(0, 0, 1, 1).data; const hex = '#' + [d[0], d[1], d[2]].map(v => v.toString(16).padStart(2, '0')).join('');
+    $('meta[name="theme-color"]').setAttribute('content', hex); document.documentElement.style.backgroundColor = hex; } catch {} });
   r.style.setProperty('--glass-alpha', S.glass);
   r.style.setProperty('--fs', { klein: '15px', normal: '16px', gross: '18px' }[S.font] || '16px');
   document.body.classList.toggle('no-anim', !S.anim);
