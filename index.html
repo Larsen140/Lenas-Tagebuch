@@ -18,15 +18,15 @@
   --glass-alpha:.42; --fs:16px; --radius:22px;
 }
 :root[data-theme="dark"]{
-  --bg:#041033; --bg2:#0b2a6e; --bg3:#0a2260; --text:#eaf4ff; --muted:rgba(214,232,255,.62);
-  --glass:rgba(20,38,84,var(--glass-alpha)); --glass-strong:rgba(14,28,64,.78);
+  --bg:color-mix(in srgb,var(--a4) 22%,#020611); --bg2:color-mix(in srgb,var(--a1) 42%,#061030); --bg3:color-mix(in srgb,var(--a4) 38%,#050b22); --text:#eaf4ff; --muted:rgba(214,232,255,.62);
+  --glass:color-mix(in srgb,var(--a4) 22%,rgba(12,22,52,var(--glass-alpha))); --glass-strong:color-mix(in srgb,var(--a4) 16%,rgba(10,18,44,.84));
   --glass-border:rgba(160,210,255,.20); --glass-hi:rgba(255,255,255,.12);
   --input:rgba(255,255,255,.07); --shadow:0 12px 40px rgba(0,8,35,.55);
   --title-grad:linear-gradient(90deg,#ffffff 0%,var(--a3) 40%,var(--a2) 70%,#ffffff 100%);
   --blob-op:.5;
 }
 :root[data-theme="light"]{
-  --bg:#e6f0ff; --bg2:#cfe4ff; --bg3:#dcebff; --text:#0b1733; --muted:rgba(20,40,80,.58);
+  --bg:color-mix(in srgb,var(--a3) 45%,#f4f8ff); --bg2:color-mix(in srgb,var(--a2) 40%,#eef4ff); --bg3:color-mix(in srgb,var(--a3) 70%,#ffffff); --text:#0b1733; --muted:rgba(20,40,80,.58);
   --glass:rgba(255,255,255,calc(var(--glass-alpha) + .12)); --glass-strong:rgba(250,252,255,.86);
   --glass-border:rgba(255,255,255,.75); --glass-hi:rgba(255,255,255,.7);
   --input:rgba(255,255,255,.6); --shadow:0 10px 30px rgba(40,90,170,.16);
@@ -45,11 +45,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;paddin
 /* ---------- Hintergrund: leuchtendes blaues Auge ---------- */
 .bg{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;
   background:linear-gradient(165deg,var(--bg2) 0%,var(--bg3) 50%,var(--bg) 100%)}
-.blob{position:absolute;border-radius:50%;filter:blur(80px);opacity:var(--blob-op);will-change:transform}
-.b1{width:70vmax;height:70vmax;background:var(--a1);top:-25vmax;left:-25vmax;animation:float1 24s ease-in-out infinite alternate}
-.b2{width:70vmax;height:70vmax;background:var(--a4);bottom:-25vmax;right:-25vmax;animation:float2 28s ease-in-out infinite alternate}
-.b3{width:45vmax;height:45vmax;background:var(--a2);top:30%;right:-15vmax;opacity:calc(var(--blob-op)*.6);animation:float3 21s ease-in-out infinite alternate}
-.b4{width:50vmax;height:50vmax;background:var(--a1);bottom:-10vmax;left:-20vmax;opacity:calc(var(--blob-op)*.8);animation:float4 26s ease-in-out infinite alternate}
+.blob{position:absolute;border-radius:50%;opacity:var(--blob-op);will-change:transform;transform:translateZ(0);
+  background:radial-gradient(circle at 50% 50%,var(--c) 0%,color-mix(in srgb,var(--c) 45%,transparent) 35%,transparent 68%)}
+.b1{--c:var(--a1);width:95vmax;height:95vmax;top:-40vmax;left:-38vmax;animation:float1 24s ease-in-out infinite alternate}
+.b2{--c:var(--a4);width:95vmax;height:95vmax;bottom:-40vmax;right:-38vmax;animation:float2 28s ease-in-out infinite alternate}
+.b3{--c:var(--a2);width:65vmax;height:65vmax;top:22%;right:-28vmax;opacity:calc(var(--blob-op)*.65);animation:float3 21s ease-in-out infinite alternate}
+.b4{--c:var(--a1);width:70vmax;height:70vmax;bottom:-18vmax;left:-30vmax;opacity:calc(var(--blob-op)*.8);animation:float4 26s ease-in-out infinite alternate}
 .sparkles{position:absolute;inset:0;
   background-image:radial-gradient(1.6px 1.6px at 12% 22%,#fff,transparent),radial-gradient(1.2px 1.2px at 78% 14%,var(--a3),transparent),
   radial-gradient(1.8px 1.8px at 64% 62%,#fff,transparent),radial-gradient(1.2px 1.2px at 28% 74%,var(--a3),transparent),
@@ -57,10 +58,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;paddin
   radial-gradient(1.6px 1.6px at 8% 92%,#fff,transparent),radial-gradient(1.2px 1.2px at 94% 44%,var(--a3),transparent);
   animation:twinkle 5s ease-in-out infinite alternate;opacity:.8}
 :root[data-theme="light"] .sparkles{opacity:.25}
-@keyframes float1{to{transform:translate(18vw,14vh) scale(1.12)}}
-@keyframes float2{to{transform:translate(-16vw,-12vh) scale(1.08)}}
-@keyframes float3{to{transform:translate(-14vw,10vh) scale(1.15)}}
-@keyframes float4{to{transform:translate(12vw,-10vh) scale(1.1)}}
+@keyframes float1{to{transform:translate3d(18vw,14vh,0) scale(1.12)}}
+@keyframes float2{to{transform:translate3d(-16vw,-12vh,0) scale(1.08)}}
+@keyframes float3{to{transform:translate3d(-14vw,10vh,0) scale(1.15)}}
+@keyframes float4{to{transform:translate3d(12vw,-10vh,0) scale(1.1)}}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes pulse{0%,100%{transform:scale(.88);opacity:.75}50%{transform:scale(1.08);opacity:1}}
 @keyframes twinkle{0%{opacity:.25}100%{opacity:.85}}
@@ -77,7 +78,7 @@ body.no-anim .bg *,body.no-anim h1{animation:none!important}
   box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.28),inset 0 -1px 0 rgba(255,255,255,.04)}
 
 /* ---------- Layout ---------- */
-.app{position:relative;z-index:1;max-width:1100px;margin:0 auto;min-height:100vh;min-height:100dvh;
+.app{transition:transform .45s cubic-bezier(.2,.9,.2,1),filter .45s,opacity .45s;transform-origin:50% 0;position:relative;z-index:1;max-width:1100px;margin:0 auto;min-height:100vh;min-height:100dvh;
   padding:calc(env(safe-area-inset-top) + 14px) calc(env(safe-area-inset-right) + 16px) calc(env(safe-area-inset-bottom) + 130px) calc(env(safe-area-inset-left) + 16px)}
 .top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 4px 14px}
 h1{margin:0;font-size:1.75em;font-weight:800;letter-spacing:-.02em;line-height:1.1;
@@ -85,7 +86,9 @@ h1{margin:0;font-size:1.75em;font-weight:800;letter-spacing:-.02em;line-height:1
   animation:shimmer 7s linear infinite}
 .subtitle{color:var(--muted);font-size:.88em;margin-top:4px}
 .top-actions{display:flex;gap:8px}
-.icon-btn{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;position:relative}
+.icon-btn{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;position:relative;transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+.icon-btn:active{transform:scale(.86);transition-duration:.08s}
+button,a,input,label{touch-action:manipulation}
 .icon-btn svg{width:21px;height:21px}
 .icon-btn.glass{border-radius:50%}
 #syncBtn.busy svg{animation:spin 1s linear infinite}
@@ -101,11 +104,12 @@ h1{margin:0;font-size:1.75em;font-weight:800;letter-spacing:-.02em;line-height:1
 .today span{color:var(--muted);font-size:.86em}
 
 .tab{display:none}
-.tab.active{display:block;animation:fadeUp .35s ease}
+.tab.active{display:block;animation:tabIn .42s cubic-bezier(.2,.9,.2,1) both}
+.tab.active.from-left{animation-name:tabInLeft}
 .section-title{font-size:1.05em;margin:18px 4px 10px;font-weight:700}
-.card{padding:14px 16px;margin-bottom:12px;transition:transform .15s ease}
+.card{padding:14px 16px;margin-bottom:12px;transition:transform .25s cubic-bezier(.34,1.56,.64,1);-webkit-backdrop-filter:none;backdrop-filter:none;contain:layout paint}
 .card.tap{cursor:pointer}
-.card.tap:active{transform:scale(.985)}
+.card.tap:active{transform:scale(.97);transition-duration:.1s}
 
 /* Suche / Quick-Add */
 .search{display:flex;align-items:center;gap:10px;padding:4px 6px 4px 14px;margin-bottom:14px;border-radius:16px}
@@ -180,14 +184,17 @@ h1{margin:0;font-size:1.75em;font-weight:800;letter-spacing:-.02em;line-height:1
 .tabbar button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 10px;white-space:nowrap;min-width:72px;border-radius:999px;
   font-size:11px;font-weight:600;color:var(--muted);transition:.25s}
 .tabbar svg{width:23px;height:23px}
-.tabbar button.active{color:var(--text);background:color-mix(in srgb,var(--a1) 24%,transparent);
+.tabbar button.active{color:var(--text);background:transparent;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
 :root[data-theme="dark"] .tabbar button.active{color:#fff}
-.fab{position:fixed;z-index:31;right:calc(env(safe-area-inset-right) + 20px);bottom:calc(env(safe-area-inset-bottom) + 106px);
+.fab{transition:transform .4s cubic-bezier(.34,1.56,.64,1),opacity .25s;position:fixed;z-index:31;right:calc(env(safe-area-inset-right) + 20px);bottom:calc(env(safe-area-inset-bottom) + 106px);
   width:58px;height:58px;border-radius:50%;display:grid;place-items:center;color:#fff;
   background:radial-gradient(circle at 35% 30%,var(--a3) 0%,var(--a2) 22%,var(--a1) 55%,var(--a4) 100%);
   box-shadow:0 8px 28px color-mix(in srgb,var(--a1) 60%,transparent),inset 0 1px 0 rgba(255,255,255,.6);transition:transform .2s}
-.fab:active{transform:scale(.92)}
+.fab:active{transform:scale(.88);transition-duration:.08s}
+.fab svg{transition:transform .45s cubic-bezier(.34,1.56,.64,1)}
+.fab.turn svg{transform:rotate(90deg)}
+.fab.hidden{display:grid!important;transform:scale(0) rotate(-90deg);opacity:0;pointer-events:none}
 .fab svg{width:26px;height:26px}
 @media (min-width:1100px){.fab{right:calc(50% - 530px)}}
 .watermark{position:fixed;z-index:29;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 2px);text-align:center;line-height:1.35;
@@ -248,7 +255,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 .moods{display:flex;flex-wrap:wrap;gap:8px}
 .moods button{width:44px;height:44px;border-radius:14px;font-size:22px;background:var(--input);border:1px solid var(--glass-border);transition:.2s}
 .moods button.on{background:color-mix(in srgb,var(--a1) 30%,transparent);border-color:var(--a1);transform:scale(1.08)}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 18px;border-radius:16px;font-weight:700;color:#fff;
+.btn:active{transform:scale(.96)}
+.btn{transition:transform .25s cubic-bezier(.34,1.56,.64,1);display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 18px;border-radius:16px;font-weight:700;color:#fff;
   background:linear-gradient(135deg,var(--a2),var(--a1) 55%,var(--a4));box-shadow:0 6px 20px color-mix(in srgb,var(--a1) 40%,transparent)}
 .btn.ghost{background:var(--input);color:var(--text);box-shadow:none;border:1px solid var(--glass-border)}
 .btn.danger{background:rgba(255,80,110,.14);color:#ff5c7a;box-shadow:none;border:1px solid rgba(255,92,122,.3)}
@@ -300,6 +308,29 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 :root[data-theme="dark"] .tag.besser{color:var(--a2)}
 .tag.fix{background:rgba(255,159,67,.18);color:#f08a24}
 .upd-intro{color:var(--muted);font-size:.9em;margin:0 6px 14px;line-height:1.45}
+/* ---------- Animationen ---------- */
+@keyframes tabIn{from{opacity:0;transform:translate3d(18px,0,0)}to{opacity:1;transform:none}}
+@keyframes tabInLeft{from{opacity:0;transform:translate3d(-18px,0,0)}to{opacity:1;transform:none}}
+@keyframes cardIn{from{opacity:0;transform:translate3d(0,14px,0) scale(.97)}to{opacity:1;transform:none}}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.35)}70%{transform:scale(.9)}100%{transform:scale(1)}}
+@keyframes selPop{0%{transform:scale(.7)}60%{transform:scale(1.12)}100%{transform:scale(1)}}
+@keyframes orbPulse{0%,100%{transform:scale(1);box-shadow:0 0 14px var(--a2)}50%{transform:scale(1.08);box-shadow:0 0 26px var(--a2)}}
+.tab.enter .card,.tab.enter .empty{animation:cardIn .5s cubic-bezier(.2,.9,.2,1) both;animation-delay:calc(var(--i,0) * 40ms)}
+.tab.enter :is(.card,.empty):nth-child(2){--i:1}.tab.enter :is(.card,.empty):nth-child(3){--i:2}.tab.enter :is(.card,.empty):nth-child(4){--i:3}.tab.enter :is(.card,.empty):nth-child(5){--i:4}.tab.enter :is(.card,.empty):nth-child(6){--i:5}.tab.enter :is(.card,.empty):nth-child(7){--i:6}.tab.enter :is(.card,.empty):nth-child(8){--i:7}.tab.enter :is(.card,.empty):nth-child(9){--i:8}.tab.enter :is(.card,.empty):nth-child(10){--i:9}.tab.enter :is(.card,.empty):nth-child(11){--i:10}.tab.enter :is(.card,.empty):nth-child(12){--i:11}
+.tab.enter :is(.card,.empty):nth-child(n+13){--i:12}
+.check.pop{animation:pop .4s cubic-bezier(.34,1.56,.64,1)}
+.cal-day.sel{animation:selPop .35s cubic-bezier(.34,1.56,.64,1)}
+.today .orb{animation:orbPulse 4s ease-in-out infinite}
+body.sheet-open .app{transform:scale(.955);filter:brightness(.8);opacity:.9}
+.sheet{transition:transform .5s cubic-bezier(.22,1.2,.36,1)}
+/* Flüssigglas-Blase in der Tab-Leiste */
+.tab-pill{position:absolute;top:6px;left:0;height:calc(100% - 12px);border-radius:999px;pointer-events:none;z-index:0;
+  background:linear-gradient(140deg,rgba(255,255,255,.35),transparent 55%),color-mix(in srgb,var(--a1) 30%,transparent);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 4px 14px color-mix(in srgb,var(--a1) 35%,transparent);
+  transform:translateX(var(--x,0));transition:transform .55s cubic-bezier(.34,1.45,.5,1),width .45s cubic-bezier(.34,1.45,.5,1)}
+.tabbar button{z-index:1}
+@media (prefers-reduced-motion:reduce){.tab.active,.tab.enter .card,.tab-pill,.sheet,.app{animation:none!important;transition:none!important}}
+::placeholder{color:var(--muted);opacity:.85}
 </style>
 </head>
 <body>
@@ -376,6 +407,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 </button>
 
 <nav class="tabbar glass">
+  <span class="tab-pill" aria-hidden="true"></span>
   <button data-tab="notes">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
     Notizen
@@ -413,9 +445,15 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 'use strict';
 
 /* ================= Helfer ================= */
-const APP_VERSION = '1.4';
+const APP_VERSION = '1.5';
 // Bei jedem Update oben einen Eintrag ergänzen. Typ: 'neu' | 'besser' | 'fix'
 const CHANGELOG = [
+  { v: '1.5', date: '2026-11-10', items: [
+    ['besser', 'Die App läuft flüssiger – vor allem beim Scrollen.'],
+    ['besser', 'Einträge werden schneller zwischen iPhone und iPad synchronisiert.'],
+    ['neu', 'Neue Animationen: gleitende Glas-Blase in der Tab-Leiste, Karten erscheinen sanft, Häkchen ploppen.'],
+    ['neu', '7 neue Farben: Türkis, Lavendel, Kirschblüte, Koralle, Beere, Wald und Graphit.'],
+    ['besser', 'Der Hintergrund passt sich jetzt der gewählten Farbe an.'] ] },
   { v: '1.4', date: '2026-11-10', items: [
     ['neu', 'Neuer Tab „Updates": Hier siehst du, was sich in der App geändert hat.'] ] },
   { v: '1.3', date: '2026-11-10', items: [
@@ -485,7 +523,14 @@ const ACCENTS = {
   rose:      { name: 'Rosé',           a1: '#ff7eb6', a2: '#ffb3d1', a3: '#ffe6f1', a4: '#d6457f' },
   mint:      { name: 'Mint',           a1: '#22c79b', a2: '#7eedcc', a3: '#dafff3', a4: '#0f8f6f' },
   gold:      { name: 'Sonnengold',     a1: '#ffaa33', a2: '#ffd27f', a3: '#fff1d6', a4: '#e0700a' },
-  rot:       { name: 'Rot',            a1: '#ff3b4e', a2: '#ff8591', a3: '#ffe0e4', a4: '#c4102b' }
+  rot:       { name: 'Rot',            a1: '#ff3b4e', a2: '#ff8591', a3: '#ffe0e4', a4: '#c4102b' },
+  tuerkis:   { name: 'Türkis',         a1: '#14c3c8', a2: '#6fe3e2', a3: '#d8fbf9', a4: '#08808e' },
+  lavendel:  { name: 'Lavendel',       a1: '#a68bff', a2: '#cbb9ff', a3: '#f2edff', a4: '#7356e0' },
+  kirsch:    { name: 'Kirschblüte',    a1: '#f06ad0', a2: '#f7a8e6', a3: '#fde6f7', a4: '#b3349a' },
+  koralle:   { name: 'Koralle',        a1: '#ff7a59', a2: '#ffae96', a3: '#ffe7df', a4: '#d9472a' },
+  beere:     { name: 'Beere',          a1: '#d63a6b', a2: '#ee7d9f', a3: '#fbe1ea', a4: '#8f1640' },
+  wald:      { name: 'Wald',           a1: '#46a35a', a2: '#8fd39b', a3: '#e2f6e5', a4: '#256b34' },
+  graphit:   { name: 'Graphit',        a1: '#7c8aa3', a2: '#b6c0d2', a3: '#eef1f6', a4: '#3f4a5e' }
 };
 const EV_COLORS = { accent: null, rosa: '#ff6fae', mint: '#22c79b', orange: '#ff9f43', lila: '#8b6cff', rot: '#ff5c6c' };
 const evColor = c => EV_COLORS[c] || (ACCENTS[S.accent] || ACCENTS.unendlich).a1;
@@ -550,12 +595,35 @@ const seg = (key, opts) => `<div class="seg" data-seg="${key}">${opts.map(([v, l
 function autogrow(ta) { const f = () => { ta.style.height = 'auto'; ta.style.height = (ta.scrollHeight + 2) + 'px'; }; ta.addEventListener('input', f); setTimeout(f, 30); }
 
 /* ================= Tabs ================= */
+const TAB_ORDER = ['notes', 'cal', 'todo', 'updates'];
+let curTab = null;
+function movePill(animate) {
+  const btn = $(`.tabbar button[data-tab="${S.tab}"]`), pill = $('.tab-pill');
+  if (!btn || !pill) return;
+  if (!animate) pill.style.transition = 'none';
+  pill.style.width = btn.offsetWidth + 'px';
+  pill.style.setProperty('--x', btn.offsetLeft + 'px');
+  if (!animate) requestAnimationFrame(() => { pill.style.transition = ''; });
+}
+window.addEventListener('resize', () => movePill(false));
+function stagger(sec) {
+  sec.classList.add('enter');
+  clearTimeout(sec._st); sec._st = setTimeout(() => sec.classList.remove('enter'), 1100);
+}
 function setTab(t) {
+  const back = curTab && TAB_ORDER.indexOf(t) < TAB_ORDER.indexOf(curTab);
+  const changed = curTab !== t;
   S.tab = t; saveSettings();
-  $$('.tab').forEach(s => s.classList.toggle('active', s.id === 'tab-' + t));
+  $$('.tab').forEach(s => { s.classList.toggle('active', s.id === 'tab-' + t); s.classList.toggle('from-left', !!back); });
+  if (changed) {
+    movePill(curTab !== null);
+    const fab = $('#fab'); fab.classList.add('turn'); setTimeout(() => fab.classList.remove('turn'), 300);
+  }
+  curTab = t;
   $$('.tabbar button').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
   $('#fab').classList.toggle('hidden', t === 'updates' || LOCKED_UI);
   if (t === 'updates') { renderUpdates(); S.seenVersion = APP_VERSION; saveSettings(); $('.tabbar').classList.remove('has-new'); }
+  if (changed) stagger($('#tab-' + t));
   window.scrollTo({ top: 0 });
 }
 $$('.tabbar button').forEach(b => b.addEventListener('click', () => setTab(b.dataset.tab)));
@@ -750,7 +818,7 @@ function handleTodoClick(e) {
   const id = card.dataset.todo;
   if (e.target.closest('[data-check]')) {
     const t = D.todos.find(x => x.id === id); if (!t) return;
-    card.classList.toggle('done');
+    card.classList.toggle('done'); $('.check', card).classList.add('pop');
     setTimeout(() => upsert('todos', { ...t, done: !t.done, doneAt: !t.done ? now() : 0 }), 220);
   } else openTodo(id);
 }
@@ -1013,29 +1081,38 @@ async function push(data, sha) {
   const body = { message: 'Tagebuch synchronisiert', content: b64enc(JSON.stringify(data)) };
   if (sha) body.sha = sha;
   const r = await gh('PUT', body);
-  if (r.status === 409 || r.status === 422) return false; // jemand anders war schneller → neu laden & zusammenführen
+  if (r.status === 409 || r.status === 422) return null; // jemand anders war schneller → neu laden & zusammenführen
   if (!r.ok) throw await ghError(r);
-  return true;
+  try { return (await r.json()).content.sha || 'ok'; } catch { return 'ok'; }
 }
-function scheduleSync(delay = 1500) {
+let lastSha = null, syncedSig = null, fastPending = false;
+function scheduleSync(delay = 600) {
   if (!isConfigured()) return;
-  clearTimeout(syncTimer); syncTimer = setTimeout(() => sync(false), delay);
+  fastPending = true;
+  clearTimeout(syncTimer); syncTimer = setTimeout(() => sync(false, true), delay);
 }
-async function sync(manual) {
+async function sync(manual, fast) {
   if (!isConfigured()) { setSyncState(); if (manual) openSettings('sync'); return; }
   if (syncing) { again = true; return; }
   if (!navigator.onLine) { syncErr = 'Offline – wird synchronisiert, sobald Internet da ist.'; setSyncState(); return; }
   syncing = true; clearTimeout(syncTimer); setSyncState();
   try {
     let ok = false;
+    // Schnellweg: eigene Änderung direkt hochladen (1 statt 2 Anfragen)
+    if (fast && lastSha && lastSha !== 'ok' && sig(D) !== syncedSig) {
+      const snap = clean(D), ns = await push(snap, lastSha);
+      if (ns) { lastSha = ns; syncedSig = sig(snap); ok = true; }
+    }
+    if (fast && !ok && sig(D) === syncedSig) ok = true; // nichts Neues
     for (let i = 0; i < 4 && !ok; i++) {
       const { remote, sha } = await pull();
       const merged = mergeData(D, remote);
       const changed = sig(merged) !== sig(D);
       D = merged; store(DATA_KEY, D);
       if (changed) render();
-      if (remote && sig(merged) === sig(clean(remote))) { ok = true; break; }
-      ok = await push(merged, sha);
+      if (remote && sig(merged) === sig(clean(remote))) { lastSha = sha; syncedSig = sig(merged); ok = true; break; }
+      const ns = await push(merged, sha);
+      if (ns) { lastSha = ns; syncedSig = sig(merged); ok = true; }
     }
     if (!ok) throw new Error('Gleichzeitige Änderung – bitte gleich nochmal versuchen.');
     S.lastSync = now(); saveSettings(); syncErr = null;
@@ -1044,8 +1121,8 @@ async function sync(manual) {
     syncErr = (e && e.message) ? (e.message === 'Failed to fetch' || e.message === 'Load failed' ? 'Keine Verbindung zu GitHub.' : e.message) : 'Sync-Fehler';
     if (manual) toast(syncErr);
   } finally {
-    syncing = false; setSyncState();
-    if (again) { again = false; scheduleSync(400); }
+    syncing = false; fastPending = false; setSyncState();
+    if (again) { again = false; scheduleSync(300); }
   }
 }
 function setSyncState() {
@@ -1067,9 +1144,9 @@ function updateSyncStatus() {
   } else el.textContent = 'Verbunden.';
 }
 $('#syncBtn').addEventListener('click', () => sync(true));
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { render(); scheduleSync(300); } });
-window.addEventListener('online', () => { syncErr = null; scheduleSync(300); });
-setInterval(() => { if (document.visibilityState === 'visible' && isConfigured() && !LOCKED) sync(false); }, 90 * 1000);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { render(); if (isConfigured() && !LOCKED) setTimeout(() => sync(false), 300); } });
+window.addEventListener('online', () => { syncErr = null; if (isConfigured()) setTimeout(() => sync(false), 300); });
+setInterval(() => { if (document.visibilityState === 'visible' && isConfigured() && !LOCKED) sync(false); }, 30 * 1000);
 
 /* ================= Installations-Sperre ================= */
 // Auf Handy/Tablet läuft die App nur, wenn sie vom Home-Bildschirm gestartet wurde.
