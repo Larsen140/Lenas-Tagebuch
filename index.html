@@ -445,11 +445,9 @@ body.sheet-open .app{transform:scale(.955);filter:brightness(.8);opacity:.9}
 'use strict';
 
 /* ================= Helfer ================= */
-const APP_VERSION = '1.7';
+const APP_VERSION = '1.8';
 // Bei jedem Update oben einen Eintrag ergänzen. Typ: 'neu' | 'besser' | 'fix'
 const CHANGELOG = [
-  { v: '1.7', date: '2026-11-10', items: [
-    ['besser', 'Updates kommen jetzt innerhalb weniger Sekunden an, sobald sie online sind.'] ] },
   { v: '1.6', date: '2026-11-10', items: [
     ['fix', 'Updates kommen jetzt automatisch an – die App muss dafür nicht mehr geschlossen werden.'] ] },
   { v: '1.5', date: '2026-11-10', items: [
@@ -1218,11 +1216,11 @@ if (location.search) history.replaceState(null, '', location.pathname);
 document.querySelectorAll('.ver').forEach(el => { el.textContent = 'Version ' + APP_VERSION; });
 applySettings();
 if (!S.seenVersion) { S.seenVersion = APP_VERSION; saveSettings(); } // Erststart: nichts als neu markieren
-const hasNew = S.seenVersion !== APP_VERSION;
+const hasNew = newer(CHANGELOG[0].v, S.seenVersion);
 setTab(['notes', 'cal', 'todo', 'updates'].includes(S.tab) ? S.tab : 'notes');
 if (hasNew && S.tab !== 'updates') {
   $('.tabbar').classList.add('has-new');
-  if (!LOCKED) setTimeout(() => toast(`✨ Neue Version ${APP_VERSION} – schau in „Updates"`), 900);
+  if (!LOCKED) setTimeout(() => toast(`✨ Neue Version ${CHANGELOG[0].v} – schau in „Updates"`), 900);
 }
 render(); setSyncState();
 if (isConfigured() && !LOCKED) sync(false);
