@@ -445,7 +445,7 @@ body.sheet-open .app{transform:scale(.955);filter:brightness(.8);opacity:.9}
 'use strict';
 
 /* ================= Helfer ================= */
-const APP_VERSION = '1.8';
+const APP_VERSION = '1.9'; // interne Nummer nur zum Erkennen von Updates – bei JEDEM Upload erhöhen
 // Bei jedem Update oben einen Eintrag ergänzen. Typ: 'neu' | 'besser' | 'fix'
 const CHANGELOG = [
   { v: '1.6', date: '2026-11-10', items: [
@@ -625,7 +625,7 @@ function setTab(t) {
   curTab = t;
   $$('.tabbar button').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
   $('#fab').classList.toggle('hidden', t === 'updates' || LOCKED_UI);
-  if (t === 'updates') { renderUpdates(); S.seenVersion = APP_VERSION; saveSettings(); $('.tabbar').classList.remove('has-new'); }
+  if (t === 'updates') { renderUpdates(); S.seenLog = CHANGELOG[0].v; saveSettings(); $('.tabbar').classList.remove('has-new'); }
   if (changed) stagger($('#tab-' + t));
   window.scrollTo({ top: 0 });
 }
@@ -939,7 +939,7 @@ function openSettings(focus) {
       <input type="file" id="sFile" accept="application/json,.json" class="hidden">
       <button class="btn danger full" id="sWipe">Alle Einträge löschen</button>
     </div>
-    <div class="about"><b>Lenas Tagebuch</b><br>Version ${APP_VERSION}<br>Made by Larsen</div>`);
+    <div class="about"><b>Lenas Tagebuch</b><br>Version ${CHANGELOG[0].v}<br>Made by Larsen</div>`);
 
   sh.addEventListener('click', e => {
     const sb = e.target.closest('[data-seg] [data-val]');
@@ -1203,7 +1203,7 @@ async function checkForUpdate() {
 function applyUpdate() {
   if (!pendingUpdate) return;
   if (document.body.classList.contains('sheet-open')) return; // nicht stören, während etwas offen ist
-  toast('✨ Update auf Version ' + pendingUpdate + ' …');
+  toast('✨ Update wird geladen …');
   setTimeout(() => location.replace(location.pathname + '?v=' + pendingUpdate), 700);
 }
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkForUpdate(); });
@@ -1213,10 +1213,10 @@ setTimeout(checkForUpdate, 1500);
 if (location.search) history.replaceState(null, '', location.pathname);
 
 /* ================= Start ================= */
-document.querySelectorAll('.ver').forEach(el => { el.textContent = 'Version ' + APP_VERSION; });
+document.querySelectorAll('.ver').forEach(el => { el.textContent = 'Version ' + CHANGELOG[0].v; }); // angezeigte Version = neuester Eintrag
 applySettings();
-if (!S.seenVersion) { S.seenVersion = APP_VERSION; saveSettings(); } // Erststart: nichts als neu markieren
-const hasNew = newer(CHANGELOG[0].v, S.seenVersion);
+if (!S.seenLog) { S.seenLog = CHANGELOG[0].v; saveSettings(); } // Erststart/Umstellung: nichts als neu markieren
+const hasNew = newer(CHANGELOG[0].v, S.seenLog);
 setTab(['notes', 'cal', 'todo', 'updates'].includes(S.tab) ? S.tab : 'notes');
 if (hasNew && S.tab !== 'updates') {
   $('.tabbar').classList.add('has-new');
