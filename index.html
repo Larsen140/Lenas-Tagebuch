@@ -177,7 +177,7 @@ h1{margin:0;font-size:1.75em;font-weight:800;letter-spacing:-.02em;line-height:1
 /* Tab-Leiste, FAB, Wasserzeichen */
 .tabbar{position:fixed;z-index:30;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 30px);
   display:flex;gap:4px;padding:6px;border-radius:999px}
-.tabbar button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 18px;white-space:nowrap;min-width:84px;border-radius:999px;
+.tabbar button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 10px;white-space:nowrap;min-width:72px;border-radius:999px;
   font-size:11px;font-weight:600;color:var(--muted);transition:.25s}
 .tabbar svg{width:23px;height:23px}
 .tabbar button.active{color:var(--text);background:color-mix(in srgb,var(--a1) 24%,transparent);
@@ -281,6 +281,25 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 .step svg{width:20px;height:20px;vertical-align:-4px;color:var(--a2)}
 .gate-foot{margin-top:18px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
 .watermark .ver,.gate-foot .ver{letter-spacing:.08em;opacity:.8}
+/* Updates */
+.tabbar button{position:relative}
+.tab-dot{display:none;position:absolute;top:6px;right:16px;width:9px;height:9px;border-radius:50%;background:#ff5c7a;box-shadow:0 0 0 2px rgba(0,0,0,.15)}
+.tabbar.has-new .tab-dot{display:block}
+.rel{padding:16px 16px 10px}
+.rel-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
+.rel-head b{font-size:1.1em}
+.rel-head span{color:var(--muted);font-size:.82em}
+.rel-new{font-size:.7em;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#fff;padding:3px 8px;border-radius:99px;margin-left:8px;vertical-align:2px;
+  background:linear-gradient(135deg,var(--a1),var(--a4));text-shadow:0 1px 2px rgba(0,0,0,.25)}
+.chg{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-top:1px solid var(--glass-border);line-height:1.4;font-size:.94em}
+.tag{flex:none;font-size:.7em;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:4px 8px;border-radius:8px;margin-top:1px;min-width:96px;text-align:center}
+.tag.neu{background:rgba(34,199,155,.18);color:#13a37c}
+:root[data-theme="dark"] .tag.neu{color:#4be3b6}
+:root[data-theme="dark"] .tag.fix{color:#ffb15e}
+.tag.besser{background:color-mix(in srgb,var(--a1) 20%,transparent);color:var(--a1)}
+:root[data-theme="dark"] .tag.besser{color:var(--a2)}
+.tag.fix{background:rgba(255,159,67,.18);color:#f08a24}
+.upd-intro{color:var(--muted);font-size:.9em;margin:0 6px 14px;line-height:1.45}
 </style>
 </head>
 <body>
@@ -346,6 +365,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
         <div id="todoDone"></div>
       </div>
     </section>
+    <section id="tab-updates" class="tab">
+      <div id="updatesList"></div>
+    </section>
   </main>
 </div>
 
@@ -365,6 +387,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
   <button data-tab="todo">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 6 2 2 4-4"/><path d="m3 14 2 2 4-4"/><path d="M13 6h8M13 14h8M13 20h8"/></svg>
     To-Do
+  </button>
+  <button data-tab="updates">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9Z"/><path d="M19 15l.8 1.9 1.9.8-1.9.8L19 20.4l-.8-1.9-1.9-.8 1.9-.8Z"/></svg>
+    Updates<i class="tab-dot"></i>
   </button>
 </nav>
 
@@ -387,7 +413,21 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 'use strict';
 
 /* ================= Helfer ================= */
-const APP_VERSION = '1.3';
+const APP_VERSION = '1.4';
+// Bei jedem Update oben einen Eintrag ergänzen. Typ: 'neu' | 'besser' | 'fix'
+const CHANGELOG = [
+  { v: '1.4', date: '2026-11-10', items: [
+    ['neu', 'Neuer Tab „Updates": Hier siehst du, was sich in der App geändert hat.'] ] },
+  { v: '1.3', date: '2026-11-10', items: [
+    ['besser', 'Die Versionsnummer steht jetzt immer unten unter „Made by Larsen".'] ] },
+  { v: '1.2', date: '2026-11-10', items: [
+    ['fix', 'Updates kommen jetzt sofort beim nächsten Öffnen an, statt erst nach ein paar Minuten.'] ] },
+  { v: '1.1', date: '2026-11-09', items: [
+    ['neu', 'Neue Farbe Rot in den Einstellungen.'],
+    ['besser', 'Für die Synchronisation muss nur noch der Token eingetragen werden.'] ] },
+  { v: '1.0', date: '2026-11-09', items: [
+    ['neu', 'Lenas Tagebuch ist da: Notizen, Kalender, To-Dos, Einstellungen und Sync zwischen iPhone und iPad.'] ] }
+];
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -514,9 +554,22 @@ function setTab(t) {
   S.tab = t; saveSettings();
   $$('.tab').forEach(s => s.classList.toggle('active', s.id === 'tab-' + t));
   $$('.tabbar button').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
+  $('#fab').classList.toggle('hidden', t === 'updates' || LOCKED_UI);
+  if (t === 'updates') { renderUpdates(); S.seenVersion = APP_VERSION; saveSettings(); $('.tabbar').classList.remove('has-new'); }
   window.scrollTo({ top: 0 });
 }
 $$('.tabbar button').forEach(b => b.addEventListener('click', () => setTab(b.dataset.tab)));
+let LOCKED_UI = false;
+const TAG_NAMES = { neu: 'Neu', besser: 'Verbessert', fix: 'Bugfix' };
+function renderUpdates() {
+  const seen = S.seenVersion;
+  $('#updatesList').innerHTML = `<p class="upd-intro">Hier steht, was Larsen an der App geändert hat – neue Funktionen, Verbesserungen und behobene Fehler.</p>` +
+    CHANGELOG.map((r, i) => `
+    <div class="card rel">
+      <div class="rel-head"><b>Version ${esc(r.v)}${i === 0 ? '<span class="rel-new">Aktuell</span>' : ''}</b><span>${esc(fmtShort(r.date))}</span></div>
+      ${r.items.map(([t, txt]) => `<div class="chg"><span class="tag ${t}">${TAG_NAMES[t] || t}</span><span>${esc(txt)}</span></div>`).join('')}
+    </div>`).join('');
+}
 $('#fab').addEventListener('click', () => {
   if (S.tab === 'notes') openNote();
   else if (S.tab === 'cal') openEvent(null, selDay);
@@ -1043,13 +1096,20 @@ const LOCKED = (() => {
   $('#gate').classList.remove('hidden');
   $('.app').classList.add('hidden'); $('.tabbar').classList.add('hidden'); $('#fab').classList.add('hidden'); $('.watermark').classList.add('hidden');
   document.body.style.overflow = 'hidden';
+  LOCKED_UI = true;
   return true;
 })();
 
 /* ================= Start ================= */
 document.querySelectorAll('.ver').forEach(el => { el.textContent = 'Version ' + APP_VERSION; });
 applySettings();
-setTab(['notes', 'cal', 'todo'].includes(S.tab) ? S.tab : 'notes');
+if (!S.seenVersion) { S.seenVersion = APP_VERSION; saveSettings(); } // Erststart: nichts als neu markieren
+const hasNew = S.seenVersion !== APP_VERSION;
+setTab(['notes', 'cal', 'todo', 'updates'].includes(S.tab) ? S.tab : 'notes');
+if (hasNew && S.tab !== 'updates') {
+  $('.tabbar').classList.add('has-new');
+  if (!LOCKED) setTimeout(() => toast(`✨ Neue Version ${APP_VERSION} – schau in „Updates"`), 900);
+}
 render(); setSyncState();
 if (isConfigured() && !LOCKED) sync(false);
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
