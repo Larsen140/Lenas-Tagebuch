@@ -475,7 +475,7 @@ body.sheet-open .app{transform:scale(.955);filter:brightness(.8);opacity:.9}
 'use strict';
 
 /* ================= Helfer ================= */
-const APP_VERSION = '1.22'; // interne Nummer nur zum Erkennen von Updates – bei JEDEM Upload erhöhen
+const APP_VERSION = '1.23'; // interne Nummer nur zum Erkennen von Updates – bei JEDEM Upload erhöhen
 // Bei jedem Update oben einen Eintrag ergänzen. Typ: 'neu' | 'besser' | 'fix'
 const CHANGELOG = [
   { v: '1.9', date: '2026-11-10', items: [
@@ -975,12 +975,6 @@ function renderSettings(focus) {
       <div class="sync-status" id="syncStatus"></div>
       ${isConfigured() ? `<button class="btn ghost full" id="sDisconnect">Auf diesem Gerät trennen</button>` : ''}
     </div>
-    <div class="group"><h3>Daten</h3>
-      <button class="btn ghost full" id="sExport">Backup herunterladen</button>
-      <button class="btn ghost full" id="sImport">Backup einspielen</button>
-      <input type="file" id="sFile" accept="application/json,.json" class="hidden">
-      <button class="btn danger full" id="sWipe">Alle Einträge löschen</button>
-    </div>
     <div class="about"><b>Lenas Tagebuch</b><br>Version ${CHANGELOG[0].v}<br>Made by Larsen</div>`;
 
   sh.addEventListener('click', e => {
@@ -1014,35 +1008,6 @@ function renderSettings(focus) {
   if (disc) disc.addEventListener('click', () => {
     if (!confirm('Verbindung auf diesem Gerät trennen? Deine Einträge bleiben auf dem Gerät und in GitHub erhalten.')) return;
     S.token = ''; S.lastSync = 0; syncErr = null; saveSettings(); setSyncState(); openSettings('sync');
-  });
-
-  $('#sExport', sh).addEventListener('click', () => {
-    const blob = new Blob([JSON.stringify({ app: 'lenas-tagebuch', version: 1, exportedAt: new Date().toISOString(), data: D }, null, 2)], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob); a.download = `lenas-tagebuch-backup-${todayStr()}.json`;
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-  });
-  $('#sImport', sh).addEventListener('click', () => $('#sFile', sh).click());
-  $('#sFile', sh).addEventListener('change', e => {
-    const f = e.target.files[0]; if (!f) return;
-    const r = new FileReader();
-    r.onload = () => {
-      try {
-        const j = JSON.parse(r.result);
-        const imp = normalize(j.data || j);
-        D = mergeData(D, imp); saveData(); render();
-        toast(`Backup eingespielt ✓`);
-      } catch { toast('Die Datei ist kein gültiges Backup'); }
-    };
-    r.readAsText(f);
-  });
-  $('#sWipe', sh).addEventListener('click', () => {
-    if (!confirm('Wirklich ALLE Notizen, Termine und Aufgaben löschen? Das gilt auch für die anderen verbundenen Geräte.')) return;
-    if (!confirm('Ganz sicher? Das lässt sich nicht rückgängig machen.')) return;
-    const t = now();
-    ['notes', 'events', 'todos'].forEach(k => { D[k] = D[k].map(x => ({ id: x.id, deleted: true, updatedAt: t })); });
-    saveData(); render(); toast('Alles gelöscht');
   });
 
   updateSyncStatus();
