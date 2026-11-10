@@ -31,6 +31,7 @@ document.documentElement.setAttribute('data-theme',d?'dark':'light');}catch(e){d
   --title-grad:linear-gradient(90deg,#ffffff 0%,var(--a3) 40%,var(--a2) 70%,#ffffff 100%);
   --blob-op:.5;
 }
+html[data-theme="light"],:root[data-theme="light"] body{background:color-mix(in srgb,var(--a2) 35%,var(--bg))}
 :root[data-theme="light"]{
   --bg:color-mix(in srgb,var(--a3) 45%,#f4f8ff); --bg2:color-mix(in srgb,var(--a2) 40%,#eef4ff); --bg3:color-mix(in srgb,var(--a3) 70%,#ffffff); --text:#0b1733; --muted:rgba(20,40,80,.58);
   --glass:rgba(255,255,255,calc(var(--glass-alpha) + .12)); --glass-strong:rgba(250,252,255,.86);
@@ -40,10 +41,8 @@ document.documentElement.setAttribute('data-theme',d?'dark':'light');}catch(e){d
   --blob-op:.35;
 }
 *{box-sizing:border-box}
-html{background-color:#041033}
-:root[data-theme="light"]{background-color:#e6f0ff}
 html{min-height:calc(100% + env(safe-area-inset-top) + env(safe-area-inset-bottom))}
-html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);
+html,body{margin:0;min-height:100%;background:color-mix(in srgb,var(--a4) 55%,var(--bg3));color:var(--text);
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   font-size:var(--fs);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;
   -webkit-text-size-adjust:100%;transition:background .4s}
@@ -454,7 +453,7 @@ body.sheet-open .app{transform:scale(.955);filter:brightness(.8);opacity:.9}
 'use strict';
 
 /* ================= Helfer ================= */
-const APP_VERSION = '1.11'; // interne Nummer nur zum Erkennen von Updates – bei JEDEM Upload erhöhen
+const APP_VERSION = '1.12'; // interne Nummer nur zum Erkennen von Updates – bei JEDEM Upload erhöhen
 // Bei jedem Update oben einen Eintrag ergänzen. Typ: 'neu' | 'besser' | 'fix'
 const CHANGELOG = [
   { v: '1.7', date: '2026-11-10', items: [
@@ -1222,6 +1221,16 @@ setInterval(() => { if (document.visibilityState === 'visible') checkForUpdate()
 setTimeout(checkForUpdate, 1500);
 // Adresse nach einem Update wieder aufräumen
 if (location.search) history.replaceState(null, '', location.pathname);
+
+/* ================= iOS-Fenster-Korrektur ================= */
+function fixIOSViewport() {
+  if (window.scrollY > 2) return;
+  window.scrollTo(0, 1);
+  requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo(0, 0)));
+}
+window.addEventListener('load', () => { setTimeout(fixIOSViewport, 50); setTimeout(fixIOSViewport, 400); });
+window.addEventListener('pageshow', () => setTimeout(fixIOSViewport, 50));
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') setTimeout(fixIOSViewport, 50); });
 
 /* ================= Start ================= */
 document.querySelectorAll('.ver').forEach(el => { el.textContent = 'Version ' + CHANGELOG[0].v; }); // angezeigte Version = neuester Eintrag
