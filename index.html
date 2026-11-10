@@ -187,9 +187,9 @@ button,a,input,label{touch-action:manipulation}
 
 /* Tab-Leiste, FAB, Wasserzeichen */
 .tabbar{position:fixed;z-index:30;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 30px);
-  display:flex;gap:4px;padding:6px;border-radius:999px}
-.tabbar button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 10px;white-space:nowrap;min-width:72px;border-radius:999px;
-  font-size:11px;font-weight:600;color:var(--muted);transition:.25s}
+  display:flex;gap:2px;padding:6px;border-radius:999px;width:min(calc(100% - 24px),520px)}
+.tabbar button{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 2px;white-space:nowrap;border-radius:999px;
+  font-size:10.5px;font-weight:600;color:var(--muted);transition:.25s}
 .tabbar svg{width:23px;height:23px}
 .tabbar button.active{color:var(--text);background:transparent;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
@@ -378,9 +378,6 @@ body.sheet-open .app{transform:scale(.955);filter:brightness(.8);opacity:.9}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 1-15.4 6.4L3 16"/><path d="M3 21v-5h5"/><path d="M3 12a9 9 0 0 1 15.4-6.4L21 8"/><path d="M21 3v5h-5"/></svg>
         <span class="badge"></span>
       </button>
-      <button class="icon-btn glass" id="settingsBtn" aria-label="Einstellungen">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      </button>
     </div>
   </header>
 
@@ -424,6 +421,7 @@ body.sheet-open .app{transform:scale(.955);filter:brightness(.8);opacity:.9}
         <div id="todoDone"></div>
       </div>
     </section>
+    <section id="tab-settings" class="tab"></section>
     <section id="tab-updates" class="tab">
       <div id="updatesList"></div>
     </section>
@@ -452,6 +450,10 @@ body.sheet-open .app{transform:scale(.955);filter:brightness(.8);opacity:.9}
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9Z"/><path d="M19 15l.8 1.9 1.9.8-1.9.8L19 20.4l-.8-1.9-1.9-.8 1.9-.8Z"/></svg>
     Updates<i class="tab-dot"></i>
   </button>
+  <button data-tab="settings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    Optionen
+  </button>
 </nav>
 
 <div class="watermark">Made by Larsen<br><span class="ver"></span></div>
@@ -473,7 +475,7 @@ body.sheet-open .app{transform:scale(.955);filter:brightness(.8);opacity:.9}
 'use strict';
 
 /* ================= Helfer ================= */
-const APP_VERSION = '1.18'; // interne Nummer nur zum Erkennen von Updates – bei JEDEM Upload erhöhen
+const APP_VERSION = '1.19'; // interne Nummer nur zum Erkennen von Updates – bei JEDEM Upload erhöhen
 // Bei jedem Update oben einen Eintrag ergänzen. Typ: 'neu' | 'besser' | 'fix'
 const CHANGELOG = [
   { v: '1.8', date: '2026-11-10', items: [
@@ -633,7 +635,7 @@ const seg = (key, opts) => `<div class="seg" data-seg="${key}">${opts.map(([v, l
 function autogrow(ta) { const f = () => { ta.style.height = 'auto'; ta.style.height = (ta.scrollHeight + 2) + 'px'; }; ta.addEventListener('input', f); setTimeout(f, 30); }
 
 /* ================= Tabs ================= */
-const TAB_ORDER = ['notes', 'cal', 'todo', 'updates'];
+const TAB_ORDER = ['notes', 'cal', 'todo', 'updates', 'settings'];
 let curTab = null;
 function movePill(animate) {
   const btn = $(`.tabbar button[data-tab="${S.tab}"]`), pill = $('.tab-pill');
@@ -659,7 +661,8 @@ function setTab(t) {
   }
   curTab = t;
   $$('.tabbar button').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
-  $('#fab').classList.toggle('hidden', t === 'updates' || LOCKED_UI);
+  $('#fab').classList.toggle('hidden', t === 'updates' || t === 'settings' || LOCKED_UI);
+  if (t === 'settings' && !$('#tab-settings').children.length) renderSettings();
   if (t === 'updates') { renderUpdates(); S.seenLog = CHANGELOG[0].v; saveSettings(); $('.tabbar').classList.remove('has-new'); }
   if (changed) stagger($('#tab-' + t));
   window.scrollTo({ top: 0 });
@@ -943,9 +946,11 @@ function render() {
 }
 
 /* ================= Einstellungen ================= */
-$('#settingsBtn').addEventListener('click', () => openSettings());
-function openSettings(focus) {
-  const sh = openSheet('Einstellungen', `
+function openSettings(focus) { renderSettings(focus); setTab('settings'); }
+function renderSettings(focus) {
+  const old = $('#tab-settings'), sh = old.cloneNode(false); // frisches Element = keine doppelten Event-Listener
+  old.replaceWith(sh);
+  sh.innerHTML = `<h2 class="section-title" style="margin-top:4px;font-size:1.25em">Einstellungen</h2>
     <div class="group"><h3>Darstellung</h3>
       <div class="field"><span>Modus</span>${seg('theme', [['system', 'Automatisch'], ['light', 'Hell'], ['dark', 'Dunkel']])}</div>
       <div class="field"><span>Farbe</span>
@@ -974,7 +979,7 @@ function openSettings(focus) {
       <input type="file" id="sFile" accept="application/json,.json" class="hidden">
       <button class="btn danger full" id="sWipe">Alle Einträge löschen</button>
     </div>
-    <div class="about"><b>Lenas Tagebuch</b><br>Version ${CHANGELOG[0].v}<br>Made by Larsen</div>`);
+    <div class="about"><b>Lenas Tagebuch</b><br>Version ${CHANGELOG[0].v}<br>Made by Larsen</div>`;
 
   sh.addEventListener('click', e => {
     const sb = e.target.closest('[data-seg] [data-val]');
@@ -1274,7 +1279,7 @@ document.querySelectorAll('.ver').forEach(el => { el.textContent = 'Version ' + 
 applySettings();
 if (!S.seenLog) { S.seenLog = CHANGELOG[0].v; saveSettings(); } // Erststart/Umstellung: nichts als neu markieren
 const hasNew = newer(CHANGELOG[0].v, S.seenLog);
-setTab(['notes', 'cal', 'todo', 'updates'].includes(S.tab) ? S.tab : 'notes');
+setTab(TAB_ORDER.includes(S.tab) ? S.tab : 'notes');
 if (hasNew && S.tab !== 'updates') {
   $('.tabbar').classList.add('has-new');
   if (!LOCKED) setTimeout(() => toast(`✨ Neue Version ${CHANGELOG[0].v} – schau in „Updates"`), 900);
