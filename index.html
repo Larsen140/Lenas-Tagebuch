@@ -145,6 +145,7 @@ button,a,input,label{touch-action:manipulation}
 .cal-dow{text-align:center;font-size:.72em;font-weight:600;color:var(--muted);padding:4px 0 6px;text-transform:uppercase;letter-spacing:.04em}
 .cal-day{width:100%;min-width:0;height:auto;aspect-ratio:1/1;max-height:62px;margin:0;line-height:1;border-radius:14px;display:flex;align-items:center;justify-content:center;position:relative;font-weight:500;font-size:.95em;transition:background .2s}
 .cal-day.other{opacity:.3}
+.cal-day.past:not(.other):not(.sel){opacity:.55}
 .cal-day.today{color:var(--a1);font-weight:800;box-shadow:inset 0 0 0 1.5px var(--a1)}
 :root[data-theme="dark"] .cal-day.today{color:var(--a2);box-shadow:inset 0 0 0 1.5px var(--a2)}
 .cal-day.sel{background:linear-gradient(135deg,var(--a2),var(--a1) 55%,var(--a4));color:#fff!important;font-weight:700;box-shadow:0 4px 16px color-mix(in srgb,var(--a1) 55%,transparent)}
@@ -475,7 +476,7 @@ body.sheet-open .app{transform:scale(.955);filter:brightness(.8);opacity:.9}
 'use strict';
 
 /* ================= Helfer ================= */
-const APP_VERSION = '1.23'; // interne Nummer nur zum Erkennen von Updates – bei JEDEM Upload erhöhen
+const APP_VERSION = '1.24'; // interne Nummer nur zum Erkennen von Updates – bei JEDEM Upload erhöhen
 // Bei jedem Update oben einen Eintrag ergänzen. Typ: 'neu' | 'besser' | 'fix'
 const CHANGELOG = [
   { v: '1.9', date: '2026-11-10', items: [
@@ -663,7 +664,7 @@ function setTab(t) {
   }
   curTab = t;
   $$('.tabbar button').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
-  $('#fab').classList.toggle('hidden', t === 'updates' || t === 'settings' || LOCKED_UI);
+  updateFab();
   if (t === 'settings' && !$('#tab-settings').children.length) renderSettings();
   if (t === 'updates') { renderUpdates(); S.seenLog = CHANGELOG[0].v; saveSettings(); $('.tabbar').classList.remove('has-new'); }
   if (changed) stagger($('#tab-' + t));
@@ -683,7 +684,7 @@ function renderUpdates() {
 }
 $('#fab').addEventListener('click', () => {
   if (S.tab === 'notes') openNote();
-  else if (S.tab === 'cal') openEvent(null, selDay);
+  else if (S.tab === 'cal') { if (isPastDay(selDay)) toast('Dieser Tag ist vorbei'); else openEvent(null, selDay); }
   else openTodo();
 });
 
@@ -763,6 +764,11 @@ $('#calGrid').addEventListener('click', e => {
 
 const byTime = (a, b) => ((b.allDay ? 1 : 0) - (a.allDay ? 1 : 0)) || String(a.start || '').localeCompare(String(b.start || '')) || String(a.title).localeCompare(String(b.title));
 
+const isPastDay = d => d < todayStr();
+function updateFab() {
+  const t = S.tab;
+  $('#fab').classList.toggle('hidden', t === 'updates' || t === 'settings' || LOCKED_UI || (t === 'cal' && isPastDay(selDay)));
+}
 function renderCal() {
   const y = calMonth.getFullYear(), m = calMonth.getMonth();
   $('#calTitle').textContent = `${MONTHS[m]} ${y}`;
@@ -779,9 +785,10 @@ function renderCal() {
     const d = new Date(y, m, 1 - offset + i), s = ymd(d);
     const evs = (evBy[s] || []).sort(byTime);
     const dots = evs.slice(0, 3).map(e => `<i class="dot" style="background:${evColor(e.color)}"></i>`).join('') + ((tdBy[s] && evs.length < 3) ? `<i class="dot" style="background:var(--muted)"></i>` : '');
-    html += `<button class="cal-day${d.getMonth() !== m ? ' other' : ''}${s === t ? ' today' : ''}${s === selDay ? ' sel' : ''}" data-day="${s}">${d.getDate()}${dots ? `<span class="dots">${dots}</span>` : ''}</button>`;
+    html += `<button class="cal-day${d.getMonth() !== m ? ' other' : ''}${s === t ? ' today' : ''}${s < t ? ' past' : ''}${s === selDay ? ' sel' : ''}" data-day="${s}">${d.getDate()}${dots ? `<span class="dots">${dots}</span>` : ''}</button>`;
   }
   $('#calGrid').innerHTML = html;
+  if (S.tab === 'cal') updateFab();
 
   const rel = selDay === t ? 'Heute · ' : selDay === addDays(t, 1) ? 'Morgen · ' : selDay === addDays(t, -1) ? 'Gestern · ' : '';
   $('#dayTitle').textContent = rel + fmtLong(selDay);
@@ -794,7 +801,9 @@ function renderCal() {
       <div class="info"><b>${esc(e.title)}</b>${e.place ? `<span>📍 ${esc(e.place)}</span>` : ''}${e.note ? `<span>${esc(e.note.slice(0, 140))}</span>` : ''}</div>
     </div>`).join('');
   list += tds.map(todoHtml).join('');
-  $('#dayList').innerHTML = list || emptyHtml('Nichts geplant', 'Tippe auf +, um einen Termin einzutragen.');
+  $('#dayList').innerHTML = list || (isPastDay(selDay)
+    ? emptyHtml('Dieser Tag ist vorbei', 'Hier kann nichts mehr eingetragen werden.')
+    : emptyHtml('Nichts geplant', 'Tippe auf +, um einen Termin einzutragen.'));
 }
 $('#dayList').addEventListener('click', e => {
   const ev = e.target.closest('[data-ev]'); if (ev) return openEvent(ev.dataset.ev);
@@ -807,7 +816,7 @@ function openEvent(id, date) {
   const e = ex ? { ...ex } : { id: uid(), title: '', date: date || todayStr(), allDay: false, start: `${pad(h)}:00`, end: `${pad((h + 1) % 24)}:00`, place: '', note: '', color: 'accent' };
   const sh = openSheet(ex ? 'Termin' : 'Neuer Termin', `
     <label class="field"><input class="title-in" id="eTitle" placeholder="Titel" value="${esc(e.title)}" maxlength="200"></label>
-    <label class="field"><span>Datum</span><input type="date" id="eDate" value="${esc(e.date)}"></label>
+    <label class="field"><span>Datum</span><input type="date" id="eDate" value="${esc(e.date)}" min="${esc(ex && isPastDay(ex.date) ? ex.date : todayStr())}"></label>
     <div class="box" style="padding:0 4px">${toggleRow('eAll', 'Ganztägig', '', e.allDay)}</div>
     <div class="two" id="eTimes" style="margin-top:14px">
       <label class="field"><span>Von</span><input type="time" id="eStart" value="${esc(e.start)}"></label>
@@ -820,6 +829,8 @@ function openEvent(id, date) {
     { onSave: () => {
         const title = $('#eTitle').value.trim();
         if (!title) { toast('Bitte einen Titel eingeben'); return false; }
+        const nd = $('#eDate').value || todayStr();
+        if (isPastDay(nd) && !(ex && nd === ex.date)) { toast('Vergangene Tage können nicht mehr eingetragen werden'); return false; }
         const obj = { ...e, title, date: $('#eDate').value || todayStr(), allDay: $('#eAll').checked,
           start: $('#eStart').value, end: $('#eEnd').value, place: $('#ePlace').value.trim(), note: $('#eNote').value, color: e.color };
         selDay = obj.date; const d = parseYmd(obj.date); calMonth = new Date(d.getFullYear(), d.getMonth(), 1);
