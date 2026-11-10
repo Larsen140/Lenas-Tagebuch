@@ -12,6 +12,12 @@
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="manifest" href="manifest.json">
 <title>Lenas Tagebuch</title>
+<script>
+// Hell/Dunkel sofort setzen, damit beim Start nichts schwarz aufblitzt
+(function(){try{var st=JSON.parse(localStorage.getItem('lt.settings.v1')||'{}'),t=st.theme||'system';
+var d=t==='dark'||(t==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);
+document.documentElement.setAttribute('data-theme',d?'dark':'light');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();
+</script>
 <style>
 :root{
   --a1:#39a0ff; --a2:#7fd4ff; --a3:#c9f3ff; --a4:#1e4fff;
@@ -34,6 +40,9 @@
   --blob-op:.35;
 }
 *{box-sizing:border-box}
+html{background-color:#041033}
+:root[data-theme="light"]{background-color:#e6f0ff}
+html{min-height:calc(100% + env(safe-area-inset-top) + env(safe-area-inset-bottom))}
 html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   font-size:var(--fs);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;
@@ -43,7 +52,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;paddin
 .hidden{display:none!important}
 
 /* ---------- Hintergrund: leuchtendes blaues Auge ---------- */
-.bg{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;
+.bg{position:fixed;top:-160px;left:0;right:0;bottom:-240px;z-index:0;overflow:hidden;pointer-events:none;
   background:linear-gradient(165deg,var(--bg2) 0%,var(--bg3) 50%,var(--bg) 100%)}
 .blob{position:absolute;border-radius:50%;opacity:var(--blob-op);will-change:transform;transform:translateZ(0);
   background:radial-gradient(circle at 50% 50%,var(--c) 0%,color-mix(in srgb,var(--c) 45%,transparent) 35%,transparent 68%)}
@@ -445,7 +454,7 @@ body.sheet-open .app{transform:scale(.955);filter:brightness(.8);opacity:.9}
 'use strict';
 
 /* ================= Helfer ================= */
-const APP_VERSION = '1.9'; // interne Nummer nur zum Erkennen von Updates – bei JEDEM Upload erhöhen
+const APP_VERSION = '1.10'; // interne Nummer nur zum Erkennen von Updates – bei JEDEM Upload erhöhen
 // Bei jedem Update oben einen Eintrag ergänzen. Typ: 'neu' | 'besser' | 'fix'
 const CHANGELOG = [
   { v: '1.6', date: '2026-11-10', items: [
