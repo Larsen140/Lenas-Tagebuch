@@ -339,9 +339,30 @@ body.sheet-open .app{transform:scale(.955);filter:brightness(.8);opacity:.9}
 .tabbar button{z-index:1}
 @media (prefers-reduced-motion:reduce){.tab.active,.tab.enter .card,.tab-pill,.sheet,.app{animation:none!important;transition:none!important}}
 ::placeholder{color:var(--muted);opacity:.85}
+/* Ladebildschirm */
+#splash{position:fixed;top:-200px;bottom:-200px;left:0;right:0;z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
+  background:radial-gradient(60% 45% at 50% 50%,color-mix(in srgb,var(--a1) 45%,transparent),transparent 70%),linear-gradient(165deg,var(--bg2),var(--bg3) 50%,var(--bg));
+  transition:opacity .4s ease,visibility .4s}
+#splash.hide{opacity:0;visibility:hidden;pointer-events:none}
+#splash.instant{transition:none}
+.sp-icon{width:92px;height:92px;border-radius:24px;display:grid;place-items:center;font:800 54px/1 -apple-system,BlinkMacSystemFont,sans-serif;color:#fff;
+  background:radial-gradient(circle at 30% 25%,var(--a3) 0%,var(--a2) 25%,var(--a1) 60%,var(--a4) 100%);
+  box-shadow:0 12px 40px color-mix(in srgb,var(--a1) 60%,transparent),inset 0 1px 0 rgba(255,255,255,.6);
+  text-shadow:0 0 18px rgba(255,255,255,.7);animation:spPulse 1.6s ease-in-out infinite}
+.sp-title{font-weight:800;font-size:22px;letter-spacing:-.01em;background:var(--title-grad);background-size:200% auto;
+  -webkit-background-clip:text;background-clip:text;color:transparent;animation:shimmer 2.5s linear infinite}
+.sp-bar{width:120px;height:4px;border-radius:4px;overflow:hidden;background:color-mix(in srgb,var(--text) 15%,transparent)}
+.sp-bar i{display:block;width:40%;height:100%;border-radius:4px;background:linear-gradient(90deg,var(--a2),var(--a1));animation:spLoad 1s ease-in-out infinite}
+@keyframes spPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+@keyframes spLoad{0%{transform:translateX(-110%)}100%{transform:translateX(280%)}}
 </style>
 </head>
 <body>
+<div id="splash" aria-hidden="true">
+  <div class="sp-icon">L</div>
+  <div class="sp-title">Lenas Tagebuch</div>
+  <div class="sp-bar"><i></i></div>
+</div>
 <div class="bg" aria-hidden="true">
   <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="blob b4"></div>
   <div class="sparkles"></div>
@@ -453,9 +474,11 @@ body.sheet-open .app{transform:scale(.955);filter:brightness(.8);opacity:.9}
 'use strict';
 
 /* ================= Helfer ================= */
-const APP_VERSION = '1.16'; // interne Nummer nur zum Erkennen von Updates – bei JEDEM Upload erhöhen
+const APP_VERSION = '1.17'; // interne Nummer nur zum Erkennen von Updates – bei JEDEM Upload erhöhen
 // Bei jedem Update oben einen Eintrag ergänzen. Typ: 'neu' | 'besser' | 'fix'
 const CHANGELOG = [
+  { v: '1.8', date: '2026-11-10', items: [
+    ['neu', 'Ladebildschirm beim Öffnen der App.'] ] },
   { v: '1.7', date: '2026-11-10', items: [
     ['fix', 'Der dunkle Balken unten beim Öffnen der App ist weg.'] ] },
   { v: '1.6', date: '2026-11-10', items: [
@@ -1226,15 +1249,23 @@ if (location.search) history.replaceState(null, '', location.pathname);
    iOS 26/27 legt Home-Bildschirm-Apps beim Start zu kurz an (Balken unten).
    Ein echter Tab-Wechsel behebt das – also kurz zum Kalender und zurück. */
 let vpFixing = false;
-function fixIOSViewport() {
-  if (vpFixing || LOCKED || document.body.classList.contains('sheet-open')) return;
+const splash = document.getElementById('splash');
+function hideSplash() { splash.classList.remove('instant'); splash.classList.add('hide'); }
+function fixIOSViewport(minShow) {
+  if (vpFixing) return;
+  if (LOCKED || document.body.classList.contains('sheet-open')) { hideSplash(); return; }
   vpFixing = true;
-  const back = S.tab;
+  splash.classList.add('instant'); splash.classList.remove('hide');   // Ladebildschirm sofort zeigen
+  const back = S.tab, t0 = Date.now();
   setTab(back === 'cal' ? 'notes' : 'cal');
-  setTimeout(() => { setTab(back); vpFixing = false; }, 120);
+  setTimeout(() => {
+    setTab(back);
+    setTimeout(() => { vpFixing = false; hideSplash(); }, Math.max(150, (minShow || 0) - (Date.now() - t0)));
+  }, 120);
 }
-window.addEventListener('load', () => setTimeout(fixIOSViewport, 250));
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') setTimeout(fixIOSViewport, 250); });
+window.addEventListener('load', () => setTimeout(() => fixIOSViewport(700), 150));
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') fixIOSViewport(350); });
+setTimeout(() => { if (!vpFixing) hideSplash(); }, 4000); // Sicherheitsnetz
 
 /* ================= Start ================= */
 document.querySelectorAll('.ver').forEach(el => { el.textContent = 'Version ' + CHANGELOG[0].v; }); // angezeigte Version = neuester Eintrag
