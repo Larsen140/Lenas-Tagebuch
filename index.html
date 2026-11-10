@@ -186,32 +186,14 @@ button,a,input,label{touch-action:manipulation}
 .empty p{margin:0;font-size:.92em}
 
 /* Tab-Leiste, FAB, Wasserzeichen */
-.tabbar{--p:5px;position:fixed;z-index:30;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 28px);
-  display:flex;gap:2px;padding:var(--p);border-radius:999px;width:min(calc(100% - 24px),520px);
-  background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,.02) 60%),color-mix(in srgb,color-mix(in srgb,var(--a4) 35%,var(--base)) 86%,transparent);
-  -webkit-backdrop-filter:blur(26px) saturate(190%);backdrop-filter:blur(26px) saturate(190%);
-  box-shadow:0 14px 34px rgba(0,8,35,.42),0 2px 6px rgba(0,8,35,.2),inset 0 1px 0 rgba(255,255,255,.35),inset 0 -1px 0 rgba(255,255,255,.06);
-  transition:width .45s cubic-bezier(.34,1.3,.5,1),transform .45s cubic-bezier(.34,1.3,.5,1),--p .3s}
-.tabbar button{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:7px 2px 6px;white-space:nowrap;border-radius:999px;
-  font-size:10.5px;font-weight:600;color:var(--muted);transition:color .3s,gap .3s,padding .3s}
-.tabbar svg{width:23px;height:23px;transition:transform .45s cubic-bezier(.34,1.56,.64,1),opacity .3s;opacity:.8}
-.tabbar .lbl{display:block;max-height:14px;line-height:14px;overflow:hidden;transition:max-height .3s,opacity .25s}
-.tabbar button.active{color:var(--text);font-weight:700}
-.tabbar button.active svg{opacity:1;transform:scale(1.1) translateY(-1px);fill:color-mix(in srgb,currentColor 22%,transparent)}
+.tabbar{position:fixed;z-index:30;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 30px);
+  display:flex;gap:2px;padding:6px;border-radius:999px;width:min(calc(100% - 24px),520px)}
+.tabbar button{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 2px;white-space:nowrap;border-radius:999px;
+  font-size:10.5px;font-weight:600;color:var(--muted);transition:.25s}
+.tabbar svg{width:23px;height:23px}
+.tabbar button.active{color:var(--text);background:transparent;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
 :root[data-theme="dark"] .tabbar button.active{color:#fff}
-.tabbar button:active svg{transform:scale(.82);transition-duration:.1s}
-.tabbar button.bump svg{animation:tabBump .5s cubic-bezier(.34,1.56,.64,1)}
-@keyframes tabBump{0%{transform:scale(.8)}50%{transform:scale(1.22) translateY(-2px)}100%{transform:scale(1.1) translateY(-1px)}}
-/* Beim Runterscrollen kompakt (wie bei iOS) */
-.tabbar.mini{--p:4px;width:min(calc(100% - 110px),330px);transform:translateX(-50%) translateY(6px)}
-.tabbar.mini button{gap:0;padding:8px 2px}
-.tabbar.mini .lbl{max-height:0;opacity:0}
-.tabbar.mini .tab-dot{top:4px}
-/* sanfter Übergang hinter der Leiste, damit Inhalt nicht hart darunter verschwindet */
-.bottom-fade{position:fixed;left:0;right:0;bottom:0;height:calc(env(safe-area-inset-bottom) + 120px);z-index:28;pointer-events:none;
-  background:linear-gradient(to bottom,transparent 0%,color-mix(in srgb,var(--base) 70%,transparent) 40%,var(--base) 72%)}
-.tabbar.mini ~ .watermark{opacity:0}
-.watermark{transition:opacity .3s}
 .fab{transition:transform .4s cubic-bezier(.34,1.56,.64,1),opacity .25s;position:fixed;z-index:31;right:calc(env(safe-area-inset-right) + 20px);bottom:calc(env(safe-area-inset-bottom) + 106px);
   width:58px;height:58px;border-radius:50%;display:grid;place-items:center;color:#fff;
   background:radial-gradient(circle at 35% 30%,var(--a3) 0%,var(--a2) 22%,var(--a1) 55%,var(--a4) 100%);
@@ -316,7 +298,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 .watermark .ver,.gate-foot .ver{letter-spacing:.08em;opacity:.8}
 /* Updates */
 .tabbar button{position:relative}
-.tab-dot{display:none;position:absolute;top:5px;right:calc(50% - 19px);transition:top .3s;width:9px;height:9px;border-radius:50%;background:#ff5c7a;box-shadow:0 0 0 2px rgba(0,0,0,.15)}
+.tab-dot{display:none;position:absolute;top:6px;right:16px;width:9px;height:9px;border-radius:50%;background:#ff5c7a;box-shadow:0 0 0 2px rgba(0,0,0,.15)}
 .tabbar.has-new .tab-dot{display:block}
 .rel{padding:16px 16px 10px}
 .rel-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
@@ -349,14 +331,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 body.sheet-open .app{transform:scale(.955);filter:brightness(.8);opacity:.9}
 .sheet{transition:transform .5s cubic-bezier(.22,1.2,.36,1)}
 /* Flüssigglas-Blase in der Tab-Leiste */
-.tab-pill{position:absolute;top:var(--p);left:var(--p);height:calc(100% - 2 * var(--p));width:calc((100% - 2 * var(--p) - 8px) / 5);
-  border-radius:999px;pointer-events:none;z-index:0;
-  background:linear-gradient(160deg,rgba(255,255,255,.42),rgba(255,255,255,.06) 50%,rgba(255,255,255,.14)),color-mix(in srgb,var(--a1) 34%,transparent);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.55),inset 0 -1px 2px rgba(255,255,255,.12),0 4px 16px color-mix(in srgb,var(--a1) 45%,transparent);
-  transform:translateX(calc(var(--i,0) * (100% + 2px)));transition:transform .5s cubic-bezier(.34,1.3,.5,1)}
-.tab-pill.moving{animation:liquid .5s cubic-bezier(.3,.9,.3,1)}
-@keyframes liquid{0%{scale:1 1}30%{scale:1.38 .84}65%{scale:.94 1.05}100%{scale:1 1}}
-body.vp-fix .tab-pill{transition:none;animation:none}
+.tab-pill{position:absolute;top:6px;left:0;height:calc(100% - 12px);border-radius:999px;pointer-events:none;z-index:0;
+  background:linear-gradient(140deg,rgba(255,255,255,.35),transparent 55%),color-mix(in srgb,var(--a1) 30%,transparent);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 4px 14px color-mix(in srgb,var(--a1) 35%,transparent);
+  transform:translateX(var(--x,0));transition:transform .55s cubic-bezier(.34,1.45,.5,1),width .45s cubic-bezier(.34,1.45,.5,1)}
 .tabbar button{z-index:1}
 @media (prefers-reduced-motion:reduce){.tab.active,.tab.enter .card,.tab-pill,.sheet,.app{animation:none!important;transition:none!important}}
 ::placeholder{color:var(--muted);opacity:.85}
@@ -454,8 +432,7 @@ body.vp-fix .tab-pill{transition:none;animation:none}
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
 </button>
 
-<div class="bottom-fade" aria-hidden="true"></div>
-<nav class="tabbar">
+<nav class="tabbar glass">
   <span class="tab-pill" aria-hidden="true"></span>
   <button data-tab="notes">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
@@ -498,7 +475,7 @@ body.vp-fix .tab-pill{transition:none;animation:none}
 'use strict';
 
 /* ================= Helfer ================= */
-const APP_VERSION = '1.21'; // interne Nummer nur zum Erkennen von Updates – bei JEDEM Upload erhöhen
+const APP_VERSION = '1.22'; // interne Nummer nur zum Erkennen von Updates – bei JEDEM Upload erhöhen
 // Bei jedem Update oben einen Eintrag ergänzen. Typ: 'neu' | 'besser' | 'fix'
 const CHANGELOG = [
   { v: '1.9', date: '2026-11-10', items: [
@@ -662,26 +639,15 @@ function autogrow(ta) { const f = () => { ta.style.height = 'auto'; ta.style.hei
 /* ================= Tabs ================= */
 const TAB_ORDER = ['notes', 'cal', 'todo', 'updates', 'settings'];
 let curTab = null;
-// Beschriftungen in eigene Elemente packen (zum Ein-/Ausblenden)
-$$('.tabbar button').forEach(b => [...b.childNodes].forEach(n => {
-  if (n.nodeType === 3 && n.textContent.trim()) { const sp = document.createElement('span'); sp.className = 'lbl'; sp.textContent = n.textContent.trim(); n.replaceWith(sp); }
-}));
 function movePill(animate) {
-  const pill = $('.tab-pill'); if (!pill) return;
+  const btn = $(`.tabbar button[data-tab="${S.tab}"]`), pill = $('.tab-pill');
+  if (!btn || !pill) return;
   if (!animate) pill.style.transition = 'none';
-  pill.style.setProperty('--i', Math.max(0, TAB_ORDER.indexOf(S.tab)));
-  if (animate && !document.body.classList.contains('vp-fix')) { pill.classList.remove('moving'); void pill.offsetWidth; pill.classList.add('moving'); }
+  pill.style.width = btn.offsetWidth + 'px';
+  pill.style.setProperty('--x', btn.offsetLeft + 'px');
   if (!animate) requestAnimationFrame(() => { pill.style.transition = ''; });
 }
-// Leiste beim Runterscrollen verkleinern, beim Hochscrollen wieder groß
-let lastScrollY = 0;
-window.addEventListener('scroll', () => {
-  const y = window.scrollY, bar = $('.tabbar');
-  if (y < 40) bar.classList.remove('mini');
-  else if (y > lastScrollY + 6) bar.classList.add('mini');
-  else if (y < lastScrollY - 6) bar.classList.remove('mini');
-  lastScrollY = y;
-}, { passive: true });
+window.addEventListener('resize', () => movePill(false));
 function stagger(sec) {
   sec.classList.add('enter');
   clearTimeout(sec._st); sec._st = setTimeout(() => sec.classList.remove('enter'), 1100);
@@ -702,14 +668,8 @@ function setTab(t) {
   if (t === 'updates') { renderUpdates(); S.seenLog = CHANGELOG[0].v; saveSettings(); $('.tabbar').classList.remove('has-new'); }
   if (changed) stagger($('#tab-' + t));
   window.scrollTo({ top: 0 });
-  $('.tabbar').classList.remove('mini');
 }
-$$('.tabbar button').forEach(b => b.addEventListener('click', () => {
-  b.classList.remove('bump'); void b.offsetWidth; b.classList.add('bump');
-  setTimeout(() => b.classList.remove('bump'), 520);
-  if (S.tab === b.dataset.tab) { window.scrollTo({ top: 0, behavior: 'smooth' }); return; } // nochmal tippen = nach oben
-  setTab(b.dataset.tab);
-}));
+$$('.tabbar button').forEach(b => b.addEventListener('click', () => setTab(b.dataset.tab)));
 let LOCKED_UI = false;
 const TAG_NAMES = { neu: 'Neu', besser: 'Verbessert', fix: 'Bugfix' };
 function renderUpdates() {
@@ -1303,13 +1263,13 @@ function hideSplash() { splash.classList.remove('instant'); splash.classList.add
 function fixIOSViewport(minShow) {
   if (vpFixing) return;
   if (LOCKED || document.body.classList.contains('sheet-open')) { hideSplash(); return; }
-  vpFixing = true; document.body.classList.add('vp-fix');
+  vpFixing = true;
   splash.classList.add('instant'); splash.classList.remove('hide');   // Ladebildschirm sofort zeigen
   const back = S.tab, t0 = Date.now();
   setTab(back === 'cal' ? 'notes' : 'cal');
   setTimeout(() => {
     setTab(back);
-    setTimeout(() => { vpFixing = false; document.body.classList.remove('vp-fix'); hideSplash(); }, Math.max(150, (minShow || 0) - (Date.now() - t0)));
+    setTimeout(() => { vpFixing = false; hideSplash(); }, Math.max(150, (minShow || 0) - (Date.now() - t0)));
   }, 120);
 }
 window.addEventListener('load', () => setTimeout(() => fixIOSViewport(700), 150));
