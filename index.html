@@ -445,9 +445,11 @@ body.sheet-open .app{transform:scale(.955);filter:brightness(.8);opacity:.9}
 'use strict';
 
 /* ================= Helfer ================= */
-const APP_VERSION = '1.6';
+const APP_VERSION = '1.7';
 // Bei jedem Update oben einen Eintrag ergänzen. Typ: 'neu' | 'besser' | 'fix'
 const CHANGELOG = [
+  { v: '1.7', date: '2026-11-10', items: [
+    ['besser', 'Updates kommen jetzt innerhalb weniger Sekunden an, sobald sie online sind.'] ] },
   { v: '1.6', date: '2026-11-10', items: [
     ['fix', 'Updates kommen jetzt automatisch an – die App muss dafür nicht mehr geschlossen werden.'] ] },
   { v: '1.5', date: '2026-11-10', items: [
@@ -1181,13 +1183,19 @@ const LOCKED = (() => {
 })();
 
 /* ================= Automatische Updates ================= */
-let pendingUpdate = null, lastCheck = 0;
+let pendingUpdate = null, lastCheck = 0, knownTag = null;
 const newer = (a, b) => { const x = String(a).split('.').map(Number), y = String(b).split('.').map(Number);
   for (let i = 0; i < Math.max(x.length, y.length); i++) { if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0); } return false; };
 async function checkForUpdate() {
-  if (!navigator.onLine || Date.now() - lastCheck < 15000) return;
+  if (pendingUpdate || !navigator.onLine || Date.now() - lastCheck < 8000) return;
   lastCheck = Date.now();
   try {
+    // 1) Nur kurz fragen, ob sich die Datei geändert hat (winzige Anfrage)
+    const h = await fetch('index.html?check=' + Date.now(), { method: 'HEAD', cache: 'no-store' });
+    const tag = h.headers.get('ETag') || h.headers.get('Last-Modified') || '';
+    if (tag && tag === knownTag) return;
+    knownTag = tag;
+    // 2) Geändert → neue Version holen und vergleichen
     const r = await fetch('index.html?check=' + Date.now(), { cache: 'no-store' });
     if (!r.ok) return;
     const m = (await r.text()).match(/const APP_VERSION = '([\d.]+)'/);
@@ -1201,8 +1209,8 @@ function applyUpdate() {
   setTimeout(() => location.replace(location.pathname + '?v=' + pendingUpdate), 700);
 }
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkForUpdate(); });
-setInterval(() => { if (document.visibilityState === 'visible') checkForUpdate(); }, 60 * 1000);
-setTimeout(checkForUpdate, 3000);
+setInterval(() => { if (document.visibilityState === 'visible') checkForUpdate(); }, 10 * 1000);
+setTimeout(checkForUpdate, 1500);
 // Adresse nach einem Update wieder aufräumen
 if (location.search) history.replaceState(null, '', location.pathname);
 
