@@ -25,12 +25,15 @@ async function writeJson(file, data, sha, message, fetchFn = fetch) {
 
 const fmtTime = (ms, tz) => new Intl.DateTimeFormat('de-DE', { hour: '2-digit', minute: '2-digit', timeZone: tz || 'Europe/Berlin' }).format(ms);
 const dayKey = (ms, tz) => new Intl.DateTimeFormat('en-CA', { timeZone: tz || 'Europe/Berlin' }).format(ms);
-function whenText(startMs, tz, nowMs) {
-  const d = dayKey(startMs, tz), today = dayKey(nowMs, tz), tomorrow = dayKey(nowMs + 864e5, tz), after = dayKey(nowMs + 2 * 864e5, tz);
-  if (d === today) return 'Heute';
-  if (d === tomorrow) return 'Morgen';
-  if (d === after) return 'Übermorgen';
-  return new Intl.DateTimeFormat('de-DE', { weekday: 'long', day: 'numeric', month: 'long', timeZone: tz || 'Europe/Berlin' }).format(startMs);
+// date = 'JJJJ-MM-TT' des Eintrags, verglichen mit „heute" in Lenas Zeitzone
+export function whenText(date, tz, nowMs) {
+  const today = dayKey(nowMs, tz);
+  const shift = n => { const [y, m, d] = today.split('-').map(Number); return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10); };
+  if (date === today) return 'Heute';
+  if (date === shift(1)) return 'Morgen';
+  if (date === shift(2)) return 'Übermorgen';
+  const [y, m, d] = date.split('-').map(Number);
+  return new Intl.DateTimeFormat('de-DE', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' }).format(Date.UTC(y, m - 1, d, 12));
 }
 
 // Welche Erinnerungen sind jetzt dran? (reine Funktion, damit testbar)
@@ -39,8 +42,10 @@ export function dueReminders(data, sent, nowMs) {
   for (const e of data.events || []) {
     if (e.deleted || !e.remindAt || !e.title) continue;
     if (e.remindAt > nowMs + EARLY || e.remindAt < nowMs - MAX_LATE) continue;
+    // Termin hat schon begonnen (z. B. zu spät eingetragen) → keine Erinnerung mehr; ganztägige gelten den ganzen Tag
+    if (!e.allDay && e.startAt && e.startAt < nowMs - 60e3) continue;
     const key = `e:${e.id}:${e.remindAt}`; if (sent[key]) continue;
-    const when = whenText(e.startAt || e.remindAt, e.tz, nowMs);
+    const when = whenText(e.date, e.tz, nowMs);
     const time = e.allDay ? 'ganztägig' : `um ${fmtTime(e.startAt, e.tz)}`;
     out.push({ key, payload: { title: `📅 ${e.title}`, body: `${when} ${time}${e.place ? ' · ' + e.place : ''}`,
       url: `./?open=cal&day=${e.date}`, tag: key } });
@@ -49,8 +54,7 @@ export function dueReminders(data, sent, nowMs) {
     if (t.deleted || t.done || !t.remindAt || !t.text) continue;
     if (t.remindAt > nowMs + EARLY || t.remindAt < nowMs - MAX_LATE) continue;
     const key = `t:${t.id}:${t.remindAt}`; if (sent[key]) continue;
-    const dueMs = new Date(t.due + 'T12:00:00Z').getTime();
-    const when = whenText(dueMs, 'UTC', nowMs).replace(/^Heute$/, 'heute').replace(/^Morgen$/, 'morgen').replace(/^Übermorgen$/, 'übermorgen');
+    const when = whenText(t.due, t.tz, nowMs).replace(/^Heute$/, 'heute').replace(/^Morgen$/, 'morgen').replace(/^Übermorgen$/, 'übermorgen');
     out.push({ key, payload: { title: '✅ Aufgabe', body: `${t.text} – fällig ${/^[a-zü]/.test(when) ? when : 'am ' + when}`, url: './?open=todo', tag: key } });
   }
   return out;

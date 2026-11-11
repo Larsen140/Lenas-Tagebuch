@@ -496,7 +496,7 @@ select{background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),
   <div class="gate-card glass">
     <img src="icons/apple-touch-icon.png" alt="">
     <h2>Mitteilungen erlauben</h2>
-    <p id="pgText">Damit du erfährst, wenn es ein neues Update gibt, muss die App dir Mitteilungen schicken dürfen.</p>
+    <p id="pgText">Damit dich die App an Termine und Aufgaben erinnern und über neue Updates informieren kann, muss sie dir Mitteilungen schicken dürfen.</p>
     <div class="steps hidden" id="pgSteps"></div>
     <button class="btn full" id="pgBtn">Mitteilungen erlauben</button>
     <div class="sync-status err" id="pgErr"></div>
@@ -520,7 +520,7 @@ select{background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),
 'use strict';
 
 /* ================= Helfer ================= */
-const APP_VERSION = '1.31'; // interne Nummer nur zum Erkennen von Updates – bei JEDEM Upload erhöhen
+const APP_VERSION = '1.32'; // interne Nummer nur zum Erkennen von Updates – bei JEDEM Upload erhöhen
 // Wurde die App über eine Benachrichtigung geöffnet? (vor dem Aufräumen der Adresse merken)
 const OPEN_TAB = new URLSearchParams(location.search).get('open') || (location.hash === '#updates' ? 'updates' : null);
 const OPEN_DAY = new URLSearchParams(location.search).get('day');
@@ -715,7 +715,7 @@ function stagger(sec) {
   sec.classList.add('enter');
   clearTimeout(sec._st); sec._st = setTimeout(() => sec.classList.remove('enter'), 1100);
 }
-function setTab(t) {
+function setTab(t, quiet) {
   const back = curTab && TAB_ORDER.indexOf(t) < TAB_ORDER.indexOf(curTab);
   const changed = curTab !== t;
   S.tab = t; saveSettings();
@@ -729,8 +729,8 @@ function setTab(t) {
   updateFab();
   if (t === 'settings' && !$('#tab-settings').children.length) renderSettings();
   if (t === 'updates') { renderUpdates(); S.seenLog = CHANGELOG[0].v; saveSettings(); $('.tabbar').classList.remove('has-new'); }
-  if (changed) stagger($('#tab-' + t));
-  window.scrollTo({ top: 0 });
+  if (changed && !quiet) stagger($('#tab-' + t));
+  if (!quiet) window.scrollTo({ top: 0 });
 }
 $$('.tabbar button').forEach(b => b.addEventListener('click', () => setTab(b.dataset.tab)));
 let LOCKED_UI = false;
@@ -874,8 +874,8 @@ $('#dayList').addEventListener('click', e => {
 
 function openEvent(id, date) {
   const ex = id ? D.events.find(e => e.id === id) : null;
-  const h = (new Date().getHours() + 1) % 24;
-  const e = ex ? { ...ex } : { id: uid(), title: '', date: date || todayStr(), allDay: false, start: `${pad(h)}:00`, end: `${pad((h + 1) % 24)}:00`, place: '', note: '', color: 'accent' };
+  const h = Math.min(new Date().getHours() + 1, 23);
+  const e = ex ? { ...ex } : { id: uid(), title: '', date: date || todayStr(), allDay: false, start: `${pad(h)}:00`, end: h >= 23 ? '23:59' : `${pad(h + 1)}:00`, place: '', note: '', color: 'accent' };
   const sh = openSheet(ex ? 'Termin' : 'Neuer Termin', `
     <label class="field"><input class="title-in" id="eTitle" placeholder="Titel" value="${esc(e.title)}" maxlength="200"></label>
     <label class="field"><span>Datum</span><input type="date" id="eDate" value="${esc(e.date)}" min="${esc(ex && isPastDay(ex.date) ? ex.date : todayStr())}"></label>
@@ -894,6 +894,8 @@ function openEvent(id, date) {
         if (!title) { toast('Bitte einen Titel eingeben'); return false; }
         const nd = $('#eDate').value || todayStr();
         if (isPastDay(nd) && !(ex && nd === ex.date)) { toast('Vergangene Tage können nicht mehr eingetragen werden'); return false; }
+        const st = $('#eStart').value, en = $('#eEnd').value;
+        if (!$('#eAll').checked && st && en && en <= st) { toast('Das Ende muss nach dem Beginn liegen'); return false; }
         const obj = withEventRemind({ ...e, title, date: $('#eDate').value || todayStr(), allDay: $('#eAll').checked,
           start: $('#eStart').value, end: $('#eEnd').value, place: $('#ePlace').value.trim(), note: $('#eNote').value, color: e.color,
           remind: Number($('#eRemind').value) });
@@ -905,7 +907,7 @@ function openEvent(id, date) {
   $('#eAll', sh).addEventListener('change', syncTimes); syncTimes();
   $('#eStart', sh).addEventListener('change', ev => {
     const s = ev.target.value, en = $('#eEnd', sh);
-    if (s && (!en.value || en.value <= s)) { const [hh, mm] = s.split(':').map(Number); en.value = `${pad(Math.min(23, hh + 1))}:${pad(mm)}`; }
+    if (s && (!en.value || en.value <= s)) { const [hh, mm] = s.split(':').map(Number); en.value = hh >= 23 ? '23:59' : `${pad(hh + 1)}:${pad(mm)}`; }
   });
   $('#eColors', sh).addEventListener('click', ev => {
     const b = ev.target.closest('[data-col]'); if (!b) return;
@@ -1052,8 +1054,9 @@ function renderHint() {
   const parts = [];
   if (evs.length) {
     const nowHM = `${pad(new Date().getHours())}:${pad(new Date().getMinutes())}`;
-    const next = evs.find(e => !e.allDay && e.start && e.start >= nowHM) || evs[0];
-    parts.push(`${evs.length} ${evs.length === 1 ? 'Termin' : 'Termine'} heute – ${next.allDay ? '' : (next.start ? next.start + ' ' : '')}${next.title}`);
+    const next = evs.find(e => !e.allDay && e.start && (e.end || e.start) >= nowHM) || evs.find(e => e.allDay || !e.start);
+    const cnt = `${evs.length} ${evs.length === 1 ? 'Termin' : 'Termine'} heute`;
+    parts.push(next ? `${cnt} – ${next.allDay || !next.start ? '' : (next.start <= nowHM ? 'jetzt ' : next.start + ' ')}${next.title}` : `${cnt} – alle vorbei`);
   }
   if (tds.length) parts.push(`${tds.length} ${tds.length === 1 ? 'Aufgabe' : 'Aufgaben'} fällig`);
   el.innerHTML = `<div class="orb"></div><div><b>${greet}, Lena ✨</b><span>${esc(parts.join(' · ') || 'Heute steht nichts an. Genieß den Tag!')}</span></div>`;
@@ -1065,6 +1068,13 @@ function render() {
   $('#subtitle').textContent = fmtLong(todayStr());
   renderHint(); renderNotes(); renderCal(); renderTodos();
 }
+
+let shownDay = todayStr();
+setInterval(() => {
+  const t = todayStr(); if (t === shownDay) return;
+  if (selDay === shownDay) selDay = t;         // „heute" wandert mit
+  shownDay = t; render(); updateFab();
+}, 30 * 1000);
 
 /* ================= Einstellungen ================= */
 function openSettings(focus) { renderSettings(focus); setTab('settings'); }
@@ -1108,7 +1118,7 @@ function renderSettings(focus) {
       <div class="box">${toggleRow('sHint', 'Tagesübersicht', 'Zeigt oben heutige Termine & Aufgaben', S.todayHint)}</div>
     </div>
     <div class="group" id="pushGroup"><h3>Benachrichtigungen</h3>
-      <div class="sync-status ok">✓ Mitteilungen bei neuen Updates sind an</div>
+      <div class="sync-status ok">✓ Mitteilungen für Erinnerungen und neue Updates sind an</div>
       ${S.pushEndpoint ? '' : '<p class="hint">Wird mit GitHub verbunden, sobald unten der Token eingetragen ist.</p>'}
       <button type="button" class="text-btn" id="sPushTest">Test-Nachricht anzeigen</button>
     </div>
@@ -1288,15 +1298,17 @@ async function sync(manual, fast) {
       const changed = sig(merged) !== sig(D);
       D = merged; store(DATA_KEY, D);
       if (changed) render();
-      if (remote && sig(merged) === sig(clean(remote))) { lastSha = sha; syncedSig = sig(merged); ok = true; break; }
+      if (remote && sig(merged) === sig(clean(remote))) { lastSha = sha; syncedSig = sig(clean(remote)); ok = true; break; }
+      const mSig = sig(merged);                 // Stand VOR dem Hochladen merken
       const ns = await push(merged, sha);
-      if (ns) { lastSha = ns; syncedSig = sig(merged); ok = true; }
+      if (ns) { lastSha = ns; syncedSig = mSig; ok = true; }
     }
     if (!ok) throw new Error('Gleichzeitige Änderung – bitte gleich nochmal versuchen.');
+    if (sig(D) !== syncedSig) again = true;     // während des Syncs geändert → gleich nochmal
     S.lastSync = now(); saveSettings(); syncErr = null;
     if (migrateReminders()) { saveData(); render(); }
     if (S.pushOn && !S.pushEndpoint) checkPushSub();
-    if (manual) toast('Synchronisiert ✓');
+    if (manual) { toast('Synchronisiert ✓'); if (S.tab === 'settings' && !$('#sDisconnect')) renderSettings(); }
   } catch (e) {
     syncErr = (e && e.message) ? (e.message === 'Failed to fetch' || e.message === 'Load failed' ? 'Keine Verbindung zu GitHub.' : e.message) : 'Sync-Fehler';
     if (manual) toast(syncErr);
@@ -1427,7 +1439,7 @@ function showPushGate(denied) {
       .map((t, i) => `<div class="step"><span class="n">${i + 1}</span><span>${t}</span></div>`).join('');
     $('#pgSteps').classList.remove('hidden'); $('#pgBtn').textContent = 'Erneut prüfen';
   } else {
-    $('#pgText').textContent = 'Damit du erfährst, wenn es ein neues Update gibt, muss die App dir Mitteilungen schicken dürfen.';
+    $('#pgText').textContent = 'Damit dich die App an Termine und Aufgaben erinnern und über neue Updates informieren kann, muss sie dir Mitteilungen schicken dürfen.';
     $('#pgSteps').classList.add('hidden'); $('#pgBtn').textContent = 'Mitteilungen erlauben';
   }
   g.classList.remove('hidden');
@@ -1491,10 +1503,11 @@ function fixIOSViewport(minShow) {
   if (LOCKED || document.body.classList.contains('sheet-open')) { hideSplash(); return; }
   vpFixing = true;
   splash.classList.add('instant'); splash.classList.remove('hide');   // Ladebildschirm sofort zeigen
-  const back = S.tab, t0 = Date.now();
-  setTab(back === 'cal' ? 'notes' : 'cal');
+  const back = S.tab, t0 = Date.now(), y = window.scrollY;
+  setTab(back === 'cal' ? 'notes' : 'cal', true);
   setTimeout(() => {
-    setTab(back);
+    setTab(back, true);
+    window.scrollTo(0, y);
     setTimeout(() => { vpFixing = false; hideSplash(); }, Math.max(150, (minShow || 0) - (Date.now() - t0)));
   }, 120);
 }
