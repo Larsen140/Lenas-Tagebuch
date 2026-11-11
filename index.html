@@ -561,12 +561,15 @@ select{background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),
 'use strict';
 
 /* ================= Helfer ================= */
-const APP_VERSION = '1.34'; // interne Nummer nur zum Erkennen von Updates – bei JEDEM Upload erhöhen
+const APP_VERSION = '1.35'; // interne Nummer nur zum Erkennen von Updates – bei JEDEM Upload erhöhen
 // Wurde die App über eine Benachrichtigung geöffnet? (vor dem Aufräumen der Adresse merken)
 const OPEN_TAB = new URLSearchParams(location.search).get('open') || (location.hash === '#updates' ? 'updates' : null);
 const OPEN_DAY = new URLSearchParams(location.search).get('day');
 // Bei jedem Update oben einen Eintrag ergänzen. Typ: 'neu' | 'besser' | 'fix'
 const CHANGELOG = [
+  { v: '1.14', date: '2026-11-11', items: [
+    ['neu', 'Bilderrätsel: 4 Bilder, 1 Wort – 150 extrem schwere Rätsel. Oben auf den Controller tippen 🎮'],
+    ['neu', 'Münzen sammeln und für Tipps ausgeben – aber Vorsicht: falsch raten kostet!'] ] },
   { v: '1.13', date: '2026-11-11', items: [
     ['fix', 'Beim Zurückkehren in die App springt die Liste nicht mehr nach oben.'],
     ['fix', 'Einträge, die während der Synchronisation gespeichert werden, kommen jetzt sofort auf dem anderen Gerät an.'],
