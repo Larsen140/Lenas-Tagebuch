@@ -1,0 +1,31 @@
+# Schickt eine Push-Nachricht an Lenas Geräte, sobald im Updates-Tab eine neue Version steht.
+name: Update-Benachrichtigung
+
+on:
+  push:
+    branches: [main]
+    paths: ['index.html']
+  workflow_dispatch:   # zum Testen: im Tab "Actions" → "Run workflow"
+
+jobs:
+  benachrichtigen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: web-push installieren
+        run: npm i --no-save web-push@3.6.7
+      - name: Warten, bis die neue Version auf GitHub Pages online ist
+        if: github.event_name == 'push'
+        run: sleep 75
+      - name: Nachricht senden
+        run: node .github/scripts/update-push.mjs
+        env:
+          DATA_TOKEN: ${{ secrets.DATA_TOKEN }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          BEFORE: ${{ github.event.before }}
+          MANUAL: ${{ github.event_name == 'workflow_dispatch' }}
