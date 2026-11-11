@@ -425,6 +425,28 @@ select{background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),
 .g-win h3{font-size:1.6em;margin:4px 0 2px}
 .g-win p{color:var(--muted);margin:0 0 14px}
 .g-burst{font-size:40px;letter-spacing:6px;animation:gWin 1s ease-in-out infinite}
+/* ---------- Bilder in Notizen ---------- */
+.n-cover{position:relative;margin:-14px -16px 10px;height:160px;border-radius:var(--radius) var(--radius) 0 0;overflow:hidden;background:var(--input)}
+.n-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.n-more{position:absolute;right:10px;bottom:10px;padding:4px 10px;border-radius:999px;font-size:.8em;font-weight:700;color:#fff;
+  background:rgba(0,0,0,.45);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+img.ld{background:linear-gradient(100deg,transparent 30%,color-mix(in srgb,var(--text) 10%,transparent) 50%,transparent 70%) var(--input);background-size:200% 100%;animation:shimmer 1.2s linear infinite;color:transparent}
+img.miss{opacity:.35}
+.n-imgs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.n-thumb{position:relative;aspect-ratio:1;border-radius:14px;overflow:hidden;background:var(--input);border:1px solid var(--glass-border)}
+.n-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.n-thumb .x{position:absolute;top:5px;right:5px;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:16px;font-weight:700;color:#fff;background:rgba(0,0,0,.55)}
+.n-add{aspect-ratio:1;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;
+  color:var(--a1);font-weight:700;font-size:.8em;border:2px dashed color-mix(in srgb,var(--a1) 55%,transparent);background:color-mix(in srgb,var(--a1) 8%,transparent)}
+:root[data-theme="dark"] .n-add{color:var(--a2)}
+.n-add svg{width:26px;height:26px}
+.n-add input{display:none}
+.n-add.busy{opacity:.6;pointer-events:none}
+#viewer{position:fixed;inset:0;z-index:150;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.92);touch-action:pan-y}
+#viewer.open{display:flex;animation:fadeUp .25s}
+#viewer img{max-width:100%;max-height:100%;object-fit:contain;user-select:none;-webkit-user-select:none}
+#viewer .v-close{position:absolute;top:calc(env(safe-area-inset-top) + 12px);right:16px;width:40px;height:40px;border-radius:50%;font-size:22px;color:#fff;background:rgba(255,255,255,.15)}
+#viewer .v-count{position:absolute;bottom:calc(env(safe-area-inset-bottom) + 20px);left:0;right:0;text-align:center;color:#fff;font-weight:600;opacity:.8}
 </style>
 </head>
 <body>
@@ -555,13 +577,14 @@ select{background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),
 </div>
 <div id="sheetLayer" class="sheet-layer"><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
 <div id="toast" class="glass"></div>
+<div id="viewer"><img alt=""><button class="v-close" aria-label="Schließen">×</button><div class="v-count"></div></div>
 
 <script>
 (() => {
 'use strict';
 
 /* ================= Helfer ================= */
-const APP_VERSION = '1.35'; // interne Nummer nur zum Erkennen von Updates – bei JEDEM Upload erhöhen
+const APP_VERSION = '1.36'; // interne Nummer nur zum Erkennen von Updates – bei JEDEM Upload erhöhen
 // Wurde die App über eine Benachrichtigung geöffnet? (vor dem Aufräumen der Adresse merken)
 const OPEN_TAB = new URLSearchParams(location.search).get('open') || (location.hash === '#updates' ? 'updates' : null);
 const OPEN_DAY = new URLSearchParams(location.search).get('day');
@@ -801,6 +824,85 @@ $('#fab').addEventListener('click', () => {
   else openTodo();
 });
 
+/* ================= Bilder (lokal + GitHub) ================= */
+// Bilder liegen als Blob in IndexedDB; bei GitHub als Datei bilder/<id>.jpg im Daten-Repo.
+const IMG_Q_KEY = 'lt.imgqueue.v1';
+const imgDB = (() => {
+  let p;
+  const open = () => p || (p = new Promise((res, rej) => { const r = indexedDB.open('lt-bilder', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('img'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }));
+  const tx = (mode, fn) => open().then(db => new Promise((res, rej) => { const t = db.transaction('img', mode); const out = fn(t.objectStore('img'));
+    t.oncomplete = () => res(out && out.result); t.onerror = () => rej(t.error); }));
+  return { get: id => tx('readonly', st => st.get(id)).catch(() => null), put: (id, b) => tx('readwrite', st => st.put(b, id)), del: id => tx('readwrite', st => st.delete(id)).catch(() => {}) };
+})();
+const imgUrls = new Map(), imgFailed = new Map();
+const imgQueue = { get: () => load(IMG_Q_KEY) || [], add(id) { const q = this.get(); if (!q.includes(id)) { q.push(id); store(IMG_Q_KEY, q); } }, done(id) { store(IMG_Q_KEY, this.get().filter(x => x !== id)); } };
+async function compressImage(file) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('Bild konnte nicht gelesen werden')); i.src = url; });
+    const max = 1600, k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+    const w = Math.max(1, Math.round(img.naturalWidth * k)), h = Math.max(1, Math.round(img.naturalHeight * k));
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    const ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h); ctx.drawImage(img, 0, 0, w, h);
+    const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.82));
+    if (!blob) throw new Error('Bild konnte nicht verkleinert werden');
+    return { blob, w, h };
+  } finally { URL.revokeObjectURL(url); }
+}
+const blobToB64 = b => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1]); r.onerror = () => rej(r.error); r.readAsDataURL(b); });
+async function imgDownload(id) {
+  if (!isConfigured()) return null;
+  const r = await fetch(`${API}/repos/${encodeURIComponent(S.owner)}/${encodeURIComponent(S.repo)}/contents/bilder/${id}.jpg`,
+    { headers: { 'Authorization': 'Bearer ' + S.token, 'Accept': 'application/vnd.github.raw' }, cache: 'no-store' });
+  if (!r.ok) return null;
+  const blob = await r.blob(); await imgDB.put(id, blob); return blob;
+}
+async function imgUrl(id) {
+  if (imgUrls.has(id)) return imgUrls.get(id);
+  let blob = await imgDB.get(id);
+  if (!blob) {
+    if (imgFailed.has(id) && now() - imgFailed.get(id) < 30000) return null;   // nicht ständig neu versuchen
+    blob = await imgDownload(id).catch(() => null);
+    if (!blob) { imgFailed.set(id, now()); return null; }
+  }
+  const u = URL.createObjectURL(blob); imgUrls.set(id, u); return u;
+}
+function hydrateImages(root) {
+  $$('img[data-img]', root).forEach(async el => {
+    if (el.src) return;
+    el.classList.add('ld');
+    const u = await imgUrl(el.dataset.img);
+    el.classList.remove('ld');
+    if (u) el.src = u; else { el.classList.add('miss'); el.alt = '🖼️'; }
+  });
+}
+async function uploadPendingImages() {
+  if (!isConfigured()) return;
+  for (const id of imgQueue.get()) {
+    const blob = await imgDB.get(id);
+    if (!blob) { imgQueue.done(id); continue; }
+    const r = await ghPath(`bilder/${id}.jpg`, 'PUT', { message: 'Bild hinzugefügt', content: await blobToB64(blob) });
+    if (r.ok || r.status === 422) imgQueue.done(id);          // 422 = existiert schon
+    else if (r.status === 401 || r.status === 403 || r.status === 404) throw await ghError(r);
+  }
+}
+// Vollbild-Ansicht
+const viewer = { list: [], i: 0 };
+function openViewer(ids, i) { viewer.list = ids; viewer.i = i; showViewer(); $('#viewer').classList.add('open'); }
+async function showViewer() {
+  const v = $('#viewer'), img = $('img', v); img.removeAttribute('src');
+  $('.v-count', v).textContent = viewer.list.length > 1 ? `${viewer.i + 1} / ${viewer.list.length}` : '';
+  const u = await imgUrl(viewer.list[viewer.i]); if (u) img.src = u;
+}
+(() => {
+  const v = $('#viewer'); let x0 = null;
+  v.addEventListener('click', e => { if (e.target.tagName !== 'IMG' || viewer.list.length < 2) v.classList.remove('open'); else { viewer.i = (viewer.i + 1) % viewer.list.length; showViewer(); } });
+  v.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, { passive: true });
+  v.addEventListener('touchend', e => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0; x0 = null;
+    if (Math.abs(dx) > 50 && viewer.list.length > 1) { viewer.i = (viewer.i + (dx < 0 ? 1 : -1) + viewer.list.length) % viewer.list.length; showViewer(); e.preventDefault(); } });
+})();
+
 /* ================= Notizen ================= */
 const MOODS = ['😊','🥰','🤩','😌','😐','😴','😢','😡','🤒'];
 let noteQuery = '';
@@ -818,28 +920,55 @@ function renderNotes() {
   if (!list.length) { el.innerHTML = q ? emptyHtml('Nichts gefunden', 'Versuch es mit einem anderen Wort.') : emptyHtml('Noch keine Einträge', 'Tippe auf +, um deinen ersten Eintrag zu schreiben.'); return; }
   el.innerHTML = list.map(n => `
     <article class="card tap note" data-id="${esc(n.id)}">
+      ${(n.images || []).length ? `<div class="n-cover"><img data-img="${esc(n.images[0].id)}" alt="">${n.images.length > 1 ? `<span class="n-more">+${n.images.length - 1}</span>` : ''}</div>` : ''}
       <div class="note-meta"><span>${n.mood ? esc(n.mood) + '&nbsp; ' : ''}${esc(fmtShort(n.date || ymd(new Date(n.createdAt || now()))))}</span>${n.pinned ? '<span>📌</span>' : ''}</div>
-      <h3>${esc(n.title || 'Ohne Titel')}</h3>
+      ${n.title || !(n.images || []).length ? `<h3>${esc(n.title || 'Ohne Titel')}</h3>` : ''}
       ${n.body ? `<p>${esc(n.body.slice(0, 400))}</p>` : ''}
     </article>`).join('');
+  hydrateImages(el);
 }
 
 function openNote(id) {
   const ex = id ? D.notes.find(n => n.id === id) : null;
-  const n = ex ? { ...ex } : { id: uid(), title: '', body: '', date: todayStr(), mood: '', pinned: false };
+  const n = ex ? { ...ex, images: [...(ex.images || [])] } : { id: uid(), title: '', body: '', date: todayStr(), mood: '', pinned: false, images: [] };
+  const added = new Set();   // neu hinzugefügte Bilder (werden erst beim Sichern hochgeladen)
   const sh = openSheet(ex ? 'Eintrag' : 'Neuer Eintrag', `
     <label class="field"><input class="title-in" id="nTitle" placeholder="Titel" value="${esc(n.title)}" maxlength="200"></label>
     <label class="field"><span>Datum</span><input type="date" id="nDate" value="${esc(n.date)}"></label>
     <div class="field"><span>Stimmung</span><div class="moods" id="nMoods">${MOODS.map(m => `<button type="button" class="${n.mood === m ? 'on' : ''}" data-mood="${m}">${m}</button>`).join('')}</div></div>
     <label class="field"><span>Text</span><textarea class="big" id="nBody" placeholder="Liebes Tagebuch …">${esc(n.body)}</textarea></label>
+    <div class="field"><span>Bilder</span><div class="n-imgs" id="nImgs"></div></div>
     <div class="box" style="padding:0 4px">${toggleRow('nPin', 'Oben anpinnen', '', n.pinned)}</div>`,
     { onSave: () => {
         const title = $('#nTitle').value.trim(), body = $('#nBody').value;
-        if (!title && !body.trim()) { toast('Schreib einen Titel oder Text'); return false; }
-        upsert('notes', { ...n, title, body, date: $('#nDate').value || todayStr(), mood: n.mood, pinned: $('#nPin').checked });
+        if (!title && !body.trim() && !n.images.length) { toast('Schreib einen Titel oder Text'); return false; }
+        n.images.forEach(im => { if (added.has(im.id)) imgQueue.add(im.id); });
+        added.forEach(id => { if (!n.images.some(im => im.id === id)) imgDB.del(id); });
+        upsert('notes', { ...n, title, body, date: $('#nDate').value || todayStr(), mood: n.mood, pinned: $('#nPin').checked, images: n.images });
         toast('Gespeichert ✓');
       },
       onDelete: ex ? () => removeItem('notes', n.id) : null });
+  const box = $('#nImgs', sh);
+  const drawImgs = () => {
+    box.innerHTML = n.images.map((im, i) => `<div class="n-thumb" data-view="${i}"><img data-img="${esc(im.id)}" alt=""><button type="button" class="x" data-rm="${i}" aria-label="Bild entfernen">×</button></div>`).join('') +
+      `<label class="n-add" id="nAdd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>Foto<input type="file" accept="image/*" multiple id="nFile"></label>`;
+    hydrateImages(box);
+    $('#nFile', box).addEventListener('change', async e => {
+      const files = [...e.target.files]; if (!files.length) return;
+      const add = $('#nAdd', box); add.classList.add('busy');
+      for (const f of files.slice(0, 10)) {
+        try { const { blob, w, h } = await compressImage(f); const id = uid(); await imgDB.put(id, blob); added.add(id); n.images.push({ id, w, h }); }
+        catch (err) { toast((err && err.message) || 'Bild konnte nicht hinzugefügt werden'); }
+      }
+      drawImgs();
+    });
+  };
+  box.addEventListener('click', e => {
+    const rm = e.target.closest('[data-rm]');
+    if (rm) { e.preventDefault(); n.images.splice(+rm.dataset.rm, 1); drawImgs(); return; }
+    const v = e.target.closest('[data-view]'); if (v) openViewer(n.images.map(im => im.id), +v.dataset.view);
+  });
+  drawImgs();
   $('#nMoods', sh).addEventListener('click', e => {
     const b = e.target.closest('[data-mood]'); if (!b) return;
     n.mood = n.mood === b.dataset.mood ? '' : b.dataset.mood;
@@ -1432,6 +1561,7 @@ async function sync(manual, fast) {
   syncing = true; clearTimeout(syncTimer); setSyncState();
   try {
     let ok = false;
+    try { await uploadPendingImages(); } catch {}   // Bilder zuerst, damit das andere Gerät sie gleich findet
     // Schnellweg: eigene Änderung direkt hochladen (1 statt 2 Anfragen)
     if (fast && lastSha && lastSha !== 'ok' && sig(D) !== syncedSig) {
       const snap = clean(D), ns = await push(snap, lastSha);
@@ -1443,7 +1573,7 @@ async function sync(manual, fast) {
       const merged = mergeData(D, remote);
       const changed = sig(merged) !== sig(D);
       D = merged; store(DATA_KEY, D);
-      if (changed) render();
+      if (changed) { imgFailed.clear(); render(); }
       if (remote && sig(merged) === sig(clean(remote))) { lastSha = sha; syncedSig = sig(clean(remote)); ok = true; break; }
       const mSig = sig(merged);                 // Stand VOR dem Hochladen merken
       const ns = await push(merged, sha);
