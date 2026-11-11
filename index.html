@@ -384,6 +384,9 @@ body.sheet-open .app{transform:scale(.955);filter:brightness(.8);opacity:.9}
 .sp-bar i{display:block;width:40%;height:100%;border-radius:4px;background:linear-gradient(90deg,var(--a2),var(--a1));animation:spLoad 1s ease-in-out infinite}
 @keyframes spPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
 @keyframes spLoad{0%{transform:translateX(-110%)}100%{transform:translateX(280%)}}
+select{background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+  background-position:calc(100% - 20px) 52%,calc(100% - 14px) 52%;background-size:6px 6px,6px 6px;background-repeat:no-repeat;padding-right:38px;min-height:48px}
+.ev .info .rem{font-size:.8em;opacity:.85}
 </style>
 </head>
 <body>
@@ -517,11 +520,16 @@ body.sheet-open .app{transform:scale(.955);filter:brightness(.8);opacity:.9}
 'use strict';
 
 /* ================= Helfer ================= */
-const APP_VERSION = '1.29';
+const APP_VERSION = '1.31'; // interne Nummer nur zum Erkennen von Updates – bei JEDEM Upload erhöhen
 // Wurde die App über eine Benachrichtigung geöffnet? (vor dem Aufräumen der Adresse merken)
-const OPEN_TAB = new URLSearchParams(location.search).get('open') || (location.hash === '#updates' ? 'updates' : null); // interne Nummer nur zum Erkennen von Updates – bei JEDEM Upload erhöhen
+const OPEN_TAB = new URLSearchParams(location.search).get('open') || (location.hash === '#updates' ? 'updates' : null);
+const OPEN_DAY = new URLSearchParams(location.search).get('day');
 // Bei jedem Update oben einen Eintrag ergänzen. Typ: 'neu' | 'besser' | 'fix'
 const CHANGELOG = [
+  { v: '1.12', date: '2026-11-11', items: [
+    ['neu', 'Erinnerungen für Termine: Bei jedem Termin wählst du, wie früh du erinnert werden willst.'],
+    ['neu', 'Erinnerungen für To-Dos mit Fälligkeitsdatum – am Tag selbst oder am Vortag, zu deiner Uhrzeit.'],
+    ['neu', 'Standard-Erinnerungen unter Optionen → Erinnerungen.'] ] },
   { v: '1.11', date: '2026-11-11', items: [
     ['neu', 'Hintergrund-Muster: Sterne, Herzen, Blüten, Punkte, Wellen, Blasen, Raster und Streifen.'],
     ['neu', 'Eigene Hintergrundfarbe – unabhängig von der App-Farbe.'],
@@ -572,7 +580,7 @@ const groupBy = (arr, key) => arr.reduce((m, x) => { (m[x[key]] = m[x[key]] || [
 
 /* ================= Speicher ================= */
 const DATA_KEY = 'lt.data.v1', SET_KEY = 'lt.settings.v1', FILE = 'lenas-tagebuch.json';
-const DEFAULTS = { pushOn: false, pushEndpoint: '', deviceId: '', theme: 'system', accent: 'unendlich', pattern: 'fliessend', bgColor: 'auto', patOp: 0.2, anim: true, glass: 0.42, font: 'normal', weekStart: 1,
+const DEFAULTS = { remindDefault: 30, todoRemind: 'day', todoRemindTime: '08:00', pushOn: false, pushEndpoint: '', deviceId: '', theme: 'system', accent: 'unendlich', pattern: 'fliessend', bgColor: 'auto', patOp: 0.2, anim: true, glass: 0.42, font: 'normal', weekStart: 1,
   todayHint: true, owner: '', repo: '', token: '', lastSync: 0, tab: 'notes' };
 
 function load(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } }
@@ -852,7 +860,7 @@ function renderCal() {
     <div class="card tap ev" data-ev="${esc(e.id)}">
       <div class="bar" style="background:${evColor(e.color)}"></div>
       <div class="time">${e.allDay ? '<b>Ganztägig</b>' : (e.start ? `<b>${esc(e.start)}</b>${e.end ? esc(e.end) : ''}` : '<b>–</b>')}</div>
-      <div class="info"><b>${esc(e.title)}</b>${e.place ? `<span>📍 ${esc(e.place)}</span>` : ''}${e.note ? `<span>${esc(e.note.slice(0, 140))}</span>` : ''}</div>
+      <div class="info"><b>${esc(e.title)}</b>${e.place ? `<span>📍 ${esc(e.place)}</span>` : ''}${remindLabel(e) && !isPastDay(e.date) ? `<span class="rem">${remindLabel(e)}</span>` : ''}${e.note ? `<span>${esc(e.note.slice(0, 140))}</span>` : ''}</div>
     </div>`).join('');
   list += tds.map(todoHtml).join('');
   $('#dayList').innerHTML = list || (isPastDay(selDay)
@@ -876,6 +884,7 @@ function openEvent(id, date) {
       <label class="field"><span>Von</span><input type="time" id="eStart" value="${esc(e.start)}"></label>
       <label class="field"><span>Bis</span><input type="time" id="eEnd" value="${esc(e.end)}"></label>
     </div>
+    <label class="field"><span>Erinnerung</span><select id="eRemind">${remindOptions(REMIND_OPTS, e.remind ?? S.remindDefault)}</select></label>
     <label class="field"><span>Ort</span><input id="ePlace" placeholder="Optional" value="${esc(e.place)}" maxlength="200"></label>
     <label class="field"><span>Notiz</span><textarea id="eNote" placeholder="Optional">${esc(e.note)}</textarea></label>
     <div class="field"><span>Farbe</span><div class="swatches" id="eColors">${Object.keys(EV_COLORS).map(k =>
@@ -885,8 +894,9 @@ function openEvent(id, date) {
         if (!title) { toast('Bitte einen Titel eingeben'); return false; }
         const nd = $('#eDate').value || todayStr();
         if (isPastDay(nd) && !(ex && nd === ex.date)) { toast('Vergangene Tage können nicht mehr eingetragen werden'); return false; }
-        const obj = { ...e, title, date: $('#eDate').value || todayStr(), allDay: $('#eAll').checked,
-          start: $('#eStart').value, end: $('#eEnd').value, place: $('#ePlace').value.trim(), note: $('#eNote').value, color: e.color };
+        const obj = withEventRemind({ ...e, title, date: $('#eDate').value || todayStr(), allDay: $('#eAll').checked,
+          start: $('#eStart').value, end: $('#eEnd').value, place: $('#ePlace').value.trim(), note: $('#eNote').value, color: e.color,
+          remind: Number($('#eRemind').value) });
         selDay = obj.date; const d = parseYmd(obj.date); calMonth = new Date(d.getFullYear(), d.getMonth(), 1);
         upsert('events', obj); toast('Termin gespeichert ✓');
       },
@@ -948,7 +958,7 @@ $('#quickTodo').addEventListener('submit', e => {
   e.preventDefault();
   const inp = $('#quickTodoInput'), text = inp.value.trim();
   if (!text) return;
-  upsert('todos', { id: uid(), text, due: '', note: '', done: false });
+  upsert('todos', { id: uid(), text, due: '', note: '', done: false, remind: S.todoRemind });
   inp.value = '';
 });
 
@@ -974,17 +984,61 @@ function openTodo(id) {
     <label class="field"><input class="title-in" id="tText" placeholder="Was ist zu tun?" value="${esc(t.text)}" maxlength="300"></label>
     <label class="field"><span>Fällig am (optional)</span><input type="date" id="tDue" value="${esc(t.due)}"></label>
     <button type="button" class="text-btn" id="tNoDue">Kein Datum</button>
+    <div class="two" id="tRemindBox">
+      <label class="field"><span>Erinnerung</span><select id="tRemind">${remindOptions(TODO_REMIND_OPTS, t.remind || S.todoRemind)}</select></label>
+      <label class="field"><span>Um</span><input type="time" id="tRemindTime" value="${esc(t.remindTime || S.todoRemindTime)}"></label>
+    </div>
     <label class="field"><span>Notiz</span><textarea id="tNote" placeholder="Optional">${esc(t.note || '')}</textarea></label>
     ${ex ? `<div class="box" style="padding:0 4px">${toggleRow('tDone', 'Erledigt', '', t.done)}</div>` : ''}`,
     { onSave: () => {
         const text = $('#tText').value.trim();
         if (!text) { toast('Bitte eine Aufgabe eingeben'); return false; }
         const done = ex ? $('#tDone').checked : false;
-        upsert('todos', { ...t, text, due: $('#tDue').value, note: $('#tNote').value, done, doneAt: done ? (t.doneAt || now()) : 0 });
+        upsert('todos', withTodoRemind({ ...t, text, due: $('#tDue').value, note: $('#tNote').value, done, doneAt: done ? (t.doneAt || now()) : 0,
+          remind: $('#tRemind').value, remindTime: $('#tRemindTime').value || S.todoRemindTime }));
       },
       onDelete: ex ? () => removeItem('todos', t.id) : null });
-  $('#tNoDue', sh).addEventListener('click', () => { $('#tDue', sh).value = ''; });
+  const syncRem = () => { const has = !!$('#tDue', sh).value; $('#tRemindBox', sh).classList.toggle('hidden', !has);
+    $('#tRemindTime', sh).closest('.field').classList.toggle('hidden', $('#tRemind', sh).value === 'none'); };
+  $('#tNoDue', sh).addEventListener('click', () => { $('#tDue', sh).value = ''; syncRem(); });
+  $('#tDue', sh).addEventListener('change', syncRem); $('#tRemind', sh).addEventListener('change', syncRem); syncRem();
   autogrow($('#tNote', sh));
+}
+
+/* ================= Erinnerungen ================= */
+// Zeitpunkte werden hier auf dem Gerät berechnet (richtige Zeitzone) und mitsynchronisiert;
+// GitHub verschickt sie dann zur passenden Zeit als Mitteilung.
+const REMIND_OPTS = [[-1, 'Keine Erinnerung'], [0, 'Zum Beginn'], [5, '5 Minuten vorher'], [15, '15 Minuten vorher'], [30, '30 Minuten vorher'],
+  [60, '1 Stunde vorher'], [120, '2 Stunden vorher'], [1440, '1 Tag vorher'], [2880, '2 Tage vorher']];
+const TODO_REMIND_OPTS = [['none', 'Keine Erinnerung'], ['day', 'Am Fälligkeitstag'], ['before', 'Am Tag vorher']];
+const TZ = (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Berlin'; } catch { return 'Europe/Berlin'; } })();
+const remindOptions = (opts, cur) => opts.map(([v, l]) => `<option value="${v}" ${String(v) === String(cur) ? 'selected' : ''}>${l}</option>`).join('');
+const atLocal = (ymdStr, hm) => { const [y, m, d] = ymdStr.split('-').map(Number); const [hh, mm] = (hm || '09:00').split(':').map(Number); return new Date(y, m - 1, d, hh || 0, mm || 0).getTime(); };
+function withEventRemind(e) {
+  const r = Number(e.remind ?? S.remindDefault);
+  const startAt = atLocal(e.date, e.allDay || !e.start ? '09:00' : e.start); // ganztägig: Bezug 9 Uhr
+  return { ...e, remind: r, startAt, remindAt: r < 0 ? 0 : startAt - r * 60000, tz: TZ };
+}
+function withTodoRemind(t) {
+  const r = t.remind || S.todoRemind, tm = t.remindTime || S.todoRemindTime;
+  let at = 0;
+  if (t.due && r !== 'none') at = atLocal(r === 'before' ? addDays(t.due, -1) : t.due, tm);
+  return { ...t, remind: r, remindTime: tm, remindAt: at, tz: TZ };
+}
+const remindLabel = e => { const o = REMIND_OPTS.find(([v]) => v === Number(e.remind)); return e.remindAt > 0 && o ? '🔔 ' + o[1] : ''; };
+// Alte Einträge ohne Erinnerung bekommen die Standard-Erinnerung (nur zukünftige, nach dem Sync)
+function migrateReminders() {
+  const t = now(); let changed = false;
+  D.events = D.events.map(e => {
+    if (e.deleted || e.remind !== undefined || !e.date) return e;
+    const n = withEventRemind(e); if (n.startAt < t) return e;
+    changed = true; return { ...n, updatedAt: t };
+  });
+  D.todos = D.todos.map(x => {
+    if (x.deleted || x.done || x.remind !== undefined || !x.due || isPastDay(x.due)) return x;
+    changed = true; return { ...withTodoRemind(x), updatedAt: t };
+  });
+  return changed;
 }
 
 /* ================= Tagesübersicht ================= */
@@ -1043,6 +1097,12 @@ function renderSettings(focus) {
       <div class="field"><span>Glas-Effekt</span><input type="range" id="sGlass" min="0.15" max="0.8" step="0.01" value="${S.glass}"><div class="hint">Links: durchsichtiger · Rechts: kräftiger</div></div>
       <div class="field"><span>Schriftgröße</span>${seg('font', [['klein', 'Klein'], ['normal', 'Normal'], ['gross', 'Groß']])}</div>
     </div>
+    <div class="group"><h3>Erinnerungen</h3>
+      <label class="field"><span>Termine – Standard</span><select id="sRemDef">${remindOptions(REMIND_OPTS, S.remindDefault)}</select></label>
+      <label class="field"><span>To-Dos – Standard</span><select id="sTodoRem">${remindOptions(TODO_REMIND_OPTS, S.todoRemind)}</select></label>
+      <label class="field"><span>To-Dos – Uhrzeit</span><input type="time" id="sTodoTime" value="${esc(S.todoRemindTime)}"></label>
+      <p class="hint">Gilt für neue Einträge. Bei jedem Termin und jeder Aufgabe kannst du es einzeln ändern. Erinnerungen kommen als Mitteilung, meist auf ein paar Minuten genau.</p>
+    </div>
     <div class="group"><h3>Kalender</h3>
       <div class="field"><span>Woche beginnt am</span>${seg('weekStart', [[1, 'Montag'], [0, 'Sonntag']])}</div>
       <div class="box">${toggleRow('sHint', 'Tagesübersicht', 'Zeigt oben heutige Termine & Aufgaben', S.todayHint)}</div>
@@ -1099,6 +1159,9 @@ function renderSettings(focus) {
       await reg.showNotification('Lenas Tagebuch', { body: 'So sieht eine Update-Nachricht aus ✨', icon: 'icons/icon-192.png', badge: 'icons/icon-192.png', tag: 'test' });
     } catch { toast('Test hat nicht geklappt'); }
   });
+  $('#sRemDef', sh).addEventListener('change', e => { S.remindDefault = Number(e.target.value); saveSettings(); });
+  $('#sTodoRem', sh).addEventListener('change', e => { S.todoRemind = e.target.value; saveSettings(); });
+  $('#sTodoTime', sh).addEventListener('change', e => { if (e.target.value) { S.todoRemindTime = e.target.value; saveSettings(); } });
   $('#sHint', sh).addEventListener('change', e => { S.todayHint = e.target.checked; saveSettings(); renderHint(); });
 
   $('#sConnect', sh).addEventListener('click', async () => {
@@ -1231,6 +1294,7 @@ async function sync(manual, fast) {
     }
     if (!ok) throw new Error('Gleichzeitige Änderung – bitte gleich nochmal versuchen.');
     S.lastSync = now(); saveSettings(); syncErr = null;
+    if (migrateReminders()) { saveData(); render(); }
     if (S.pushOn && !S.pushEndpoint) checkPushSub();
     if (manual) toast('Synchronisiert ✓');
   } catch (e) {
@@ -1443,6 +1507,7 @@ document.querySelectorAll('.ver').forEach(el => { el.textContent = 'Version ' + 
 applySettings();
 if (!S.seenLog) { S.seenLog = CHANGELOG[0].v; saveSettings(); } // Erststart/Umstellung: nichts als neu markieren
 const hasNew = newer(CHANGELOG[0].v, S.seenLog);
+if (OPEN_DAY && /^\d{4}-\d{2}-\d{2}$/.test(OPEN_DAY)) { selDay = OPEN_DAY; const d = parseYmd(OPEN_DAY); calMonth = new Date(d.getFullYear(), d.getMonth(), 1); }
 setTab(TAB_ORDER.includes(OPEN_TAB) ? OPEN_TAB : TAB_ORDER.includes(S.tab) ? S.tab : 'notes');
 if (hasNew && S.tab !== 'updates') {
   $('.tabbar').classList.add('has-new');
