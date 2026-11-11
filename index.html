@@ -22,22 +22,23 @@ document.documentElement.setAttribute('data-theme',d?'dark':'light');}catch(e){d
 :root{
   --a1:#39a0ff; --a2:#7fd4ff; --a3:#c9f3ff; --a4:#1e4fff;
   --glass-alpha:.42; --fs:16px; --radius:22px;
+  --b1:var(--a1); --b2:var(--a2); --b3:var(--a3); --b4:var(--a4);
 }
 :root[data-theme="dark"]{
-  --bg:color-mix(in srgb,var(--a4) 22%,#020611); --bg2:color-mix(in srgb,var(--a1) 42%,#061030); --bg3:color-mix(in srgb,var(--a4) 38%,#050b22); --text:#eaf4ff; --muted:rgba(214,232,255,.62);
-  --glass:color-mix(in srgb,var(--a4) 22%,rgba(12,22,52,var(--glass-alpha))); --glass-strong:color-mix(in srgb,var(--a4) 16%,rgba(10,18,44,.84));
+  --bg:color-mix(in srgb,var(--b4) 22%,#020611); --bg2:color-mix(in srgb,var(--b1) 42%,#061030); --bg3:color-mix(in srgb,var(--b4) 38%,#050b22); --text:#eaf4ff; --muted:rgba(214,232,255,.62);
+  --glass:color-mix(in srgb,var(--b4) 22%,rgba(12,22,52,var(--glass-alpha))); --glass-strong:color-mix(in srgb,var(--b4) 16%,rgba(10,18,44,.84));
   --glass-border:rgba(160,210,255,.20); --glass-hi:rgba(255,255,255,.12);
   --input:rgba(255,255,255,.07); --shadow:0 12px 40px rgba(0,8,35,.55);
   --title-grad:linear-gradient(90deg,#ffffff 0%,var(--a3) 40%,var(--a2) 70%,#ffffff 100%);
-  --blob-op:.5; --base:color-mix(in srgb,var(--a4) 28%,#030818);
+  --blob-op:.5; --base:color-mix(in srgb,var(--b4) 28%,#030818);
 }
 :root[data-theme="light"]{
-  --bg:color-mix(in srgb,var(--a3) 45%,#f4f8ff); --bg2:color-mix(in srgb,var(--a2) 40%,#eef4ff); --bg3:color-mix(in srgb,var(--a3) 70%,#ffffff); --text:#0b1733; --muted:rgba(20,40,80,.58);
+  --bg:color-mix(in srgb,var(--b3) 45%,#f4f8ff); --bg2:color-mix(in srgb,var(--b2) 40%,#eef4ff); --bg3:color-mix(in srgb,var(--b3) 70%,#ffffff); --text:#0b1733; --muted:rgba(20,40,80,.58);
   --glass:rgba(255,255,255,calc(var(--glass-alpha) + .12)); --glass-strong:rgba(250,252,255,.86);
   --glass-border:rgba(255,255,255,.75); --glass-hi:rgba(255,255,255,.7);
   --input:rgba(255,255,255,.6); --shadow:0 10px 30px rgba(40,90,170,.16);
   --title-grad:linear-gradient(90deg,var(--a4) 0%,var(--a1) 50%,var(--a4) 100%);
-  --blob-op:.35; --base:color-mix(in srgb,var(--a3) 55%,#ffffff);
+  --blob-op:.35; --base:color-mix(in srgb,var(--b3) 55%,#ffffff);
 }
 *{box-sizing:border-box}
 html{min-height:calc(100% + env(safe-area-inset-top) + env(safe-area-inset-bottom))}
@@ -54,10 +55,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;paddin
   background:linear-gradient(165deg,var(--bg2) 0%,var(--bg3) 50%,var(--bg) 100%)}
 .blob{position:absolute;border-radius:50%;opacity:var(--blob-op);will-change:transform;transform:translateZ(0);
   background:radial-gradient(circle at 50% 50%,var(--c) 0%,color-mix(in srgb,var(--c) 45%,transparent) 35%,transparent 68%)}
-.b1{--c:var(--a1);width:95vmax;height:95vmax;top:-40vmax;left:-38vmax;animation:float1 24s ease-in-out infinite alternate}
-.b2{--c:var(--a4);width:95vmax;height:95vmax;bottom:-40vmax;right:-38vmax;animation:float2 28s ease-in-out infinite alternate}
-.b3{--c:var(--a2);width:65vmax;height:65vmax;top:22%;right:-28vmax;opacity:calc(var(--blob-op)*.65);animation:float3 21s ease-in-out infinite alternate}
-.b4{--c:var(--a1);width:70vmax;height:70vmax;bottom:-18vmax;left:-30vmax;opacity:calc(var(--blob-op)*.8);animation:float4 26s ease-in-out infinite alternate}
+.b1{--c:var(--b1);width:95vmax;height:95vmax;top:-40vmax;left:-38vmax;animation:float1 24s ease-in-out infinite alternate}
+.b2{--c:var(--b4);width:95vmax;height:95vmax;bottom:-40vmax;right:-38vmax;animation:float2 28s ease-in-out infinite alternate}
+.b3{--c:var(--b2);width:65vmax;height:65vmax;top:22%;right:-28vmax;opacity:calc(var(--blob-op)*.65);animation:float3 21s ease-in-out infinite alternate}
+.b4{--c:var(--b1);width:70vmax;height:70vmax;bottom:-18vmax;left:-30vmax;opacity:calc(var(--blob-op)*.8);animation:float4 26s ease-in-out infinite alternate}
 .sparkles{position:absolute;inset:0;
   background-image:radial-gradient(1.6px 1.6px at 12% 22%,#fff,transparent),radial-gradient(1.2px 1.2px at 78% 14%,var(--a3),transparent),
   radial-gradient(1.8px 1.8px at 64% 62%,#fff,transparent),radial-gradient(1.2px 1.2px at 28% 74%,var(--a3),transparent),
@@ -74,6 +75,31 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;paddin
 @keyframes twinkle{0%{opacity:.25}100%{opacity:.85}}
 @keyframes shimmer{to{background-position:200% center}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.pat{position:absolute;inset:-180px;display:none;opacity:var(--pat-op,.18);background:var(--pc);will-change:transform;
+  -webkit-mask-repeat:repeat;mask-repeat:repeat;animation:patDrift 50s linear infinite}
+[data-pat="sterne"] > .pat{display:block;--tile:140px;-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cpath d='M20 15 Q22.52 21.48 29 24 Q22.52 26.52 20 33 Q17.48 26.52 11 24 Q17.48 21.48 20 15Z'/%3E%3Cpath d='M92 13 Q93.4 16.6 97 18 Q93.4 19.4 92 23 Q90.6 19.4 87 18 Q90.6 16.6 92 13Z'/%3E%3Cpath d='M64 58 Q67.36 66.64 76 70 Q67.36 73.36 64 82 Q60.64 73.36 52 70 Q60.64 66.64 64 58Z'/%3E%3Cpath d='M122 82 Q123.68 86.32 128 88 Q123.68 89.68 122 94 Q120.32 89.68 116 88 Q120.32 86.32 122 82Z'/%3E%3Cpath d='M30 106 Q31.68 110.32 36 112 Q31.68 113.68 30 118 Q28.32 113.68 24 112 Q28.32 110.32 30 106Z'/%3E%3Cpath d='M104 124 Q105.12 126.88 108 128 Q105.12 129.12 104 132 Q102.88 129.12 100 128 Q102.88 126.88 104 124Z'/%3E%3Ccircle cx='50' cy='40' r='1.6'/%3E%3Ccircle cx='118' cy='50' r='1.3'/%3E%3Ccircle cx='80' cy='110' r='1.6'/%3E%3Ccircle cx='12' cy='70' r='1.2'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cpath d='M20 15 Q22.52 21.48 29 24 Q22.52 26.52 20 33 Q17.48 26.52 11 24 Q17.48 21.48 20 15Z'/%3E%3Cpath d='M92 13 Q93.4 16.6 97 18 Q93.4 19.4 92 23 Q90.6 19.4 87 18 Q90.6 16.6 92 13Z'/%3E%3Cpath d='M64 58 Q67.36 66.64 76 70 Q67.36 73.36 64 82 Q60.64 73.36 52 70 Q60.64 66.64 64 58Z'/%3E%3Cpath d='M122 82 Q123.68 86.32 128 88 Q123.68 89.68 122 94 Q120.32 89.68 116 88 Q120.32 86.32 122 82Z'/%3E%3Cpath d='M30 106 Q31.68 110.32 36 112 Q31.68 113.68 30 118 Q28.32 113.68 24 112 Q28.32 110.32 30 106Z'/%3E%3Cpath d='M104 124 Q105.12 126.88 108 128 Q105.12 129.12 104 132 Q102.88 129.12 100 128 Q102.88 126.88 104 124Z'/%3E%3Ccircle cx='50' cy='40' r='1.6'/%3E%3Ccircle cx='118' cy='50' r='1.3'/%3E%3Ccircle cx='80' cy='110' r='1.6'/%3E%3Ccircle cx='12' cy='70' r='1.2'/%3E%3C/svg%3E");-webkit-mask-size:140px 140px;mask-size:140px 140px}
+[data-pat="herzen"] > .pat{display:block;--tile:110px;-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='110' height='110' viewBox='0 0 110 110'%3E%3Cpath transform='translate%2826 28%29 rotate%28-14%29 scale%281.25%29 translate%28-8 -7%29' d='M8 14C3.5 10.6 0 7.9 0 4.6 0 2 2 0 4.4 0 6 0 7.3.9 8 2.2 8.7.9 10 0 11.6 0 14 0 16 2 16 4.6c0 3.3-3.5 6-8 9.4z'/%3E%3Cpath transform='translate%2882 72%29 rotate%2812%29 scale%280.9375%29 translate%28-8 -7%29' d='M8 14C3.5 10.6 0 7.9 0 4.6 0 2 2 0 4.4 0 6 0 7.3.9 8 2.2 8.7.9 10 0 11.6 0 14 0 16 2 16 4.6c0 3.3-3.5 6-8 9.4z'/%3E%3Cpath transform='translate%2830 88%29 rotate%288%29 scale%280.625%29 translate%28-8 -7%29' d='M8 14C3.5 10.6 0 7.9 0 4.6 0 2 2 0 4.4 0 6 0 7.3.9 8 2.2 8.7.9 10 0 11.6 0 14 0 16 2 16 4.6c0 3.3-3.5 6-8 9.4z'/%3E%3Cpath transform='translate%2888 20%29 rotate%28-6%29 scale%280.5%29 translate%28-8 -7%29' d='M8 14C3.5 10.6 0 7.9 0 4.6 0 2 2 0 4.4 0 6 0 7.3.9 8 2.2 8.7.9 10 0 11.6 0 14 0 16 2 16 4.6c0 3.3-3.5 6-8 9.4z'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='110' height='110' viewBox='0 0 110 110'%3E%3Cpath transform='translate%2826 28%29 rotate%28-14%29 scale%281.25%29 translate%28-8 -7%29' d='M8 14C3.5 10.6 0 7.9 0 4.6 0 2 2 0 4.4 0 6 0 7.3.9 8 2.2 8.7.9 10 0 11.6 0 14 0 16 2 16 4.6c0 3.3-3.5 6-8 9.4z'/%3E%3Cpath transform='translate%2882 72%29 rotate%2812%29 scale%280.9375%29 translate%28-8 -7%29' d='M8 14C3.5 10.6 0 7.9 0 4.6 0 2 2 0 4.4 0 6 0 7.3.9 8 2.2 8.7.9 10 0 11.6 0 14 0 16 2 16 4.6c0 3.3-3.5 6-8 9.4z'/%3E%3Cpath transform='translate%2830 88%29 rotate%288%29 scale%280.625%29 translate%28-8 -7%29' d='M8 14C3.5 10.6 0 7.9 0 4.6 0 2 2 0 4.4 0 6 0 7.3.9 8 2.2 8.7.9 10 0 11.6 0 14 0 16 2 16 4.6c0 3.3-3.5 6-8 9.4z'/%3E%3Cpath transform='translate%2888 20%29 rotate%28-6%29 scale%280.5%29 translate%28-8 -7%29' d='M8 14C3.5 10.6 0 7.9 0 4.6 0 2 2 0 4.4 0 6 0 7.3.9 8 2.2 8.7.9 10 0 11.6 0 14 0 16 2 16 4.6c0 3.3-3.5 6-8 9.4z'/%3E%3C/svg%3E");-webkit-mask-size:110px 110px;mask-size:110px 110px}
+[data-pat="blueten"] > .pat{display:block;--tile:120px;-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cellipse cx='30.0' cy='22.1' rx='5.8' ry='9.0' transform='rotate%280 30.0 22.1%29'/%3E%3Cellipse cx='39.4' cy='28.9' rx='5.8' ry='9.0' transform='rotate%2872 39.4 28.9%29'/%3E%3Cellipse cx='35.8' cy='40.0' rx='5.8' ry='9.0' transform='rotate%28144 35.8 40.0%29'/%3E%3Cellipse cx='24.2' cy='40.0' rx='5.8' ry='9.0' transform='rotate%28216 24.2 40.0%29'/%3E%3Cellipse cx='20.6' cy='28.9' rx='5.8' ry='9.0' transform='rotate%28288 20.6 28.9%29'/%3E%3Ccircle cx='30' cy='32' r='4.0' fill-opacity='.6'/%3E%3Cellipse cx='90.0' cy='80.3' rx='4.5' ry='7.0' transform='rotate%280 90.0 80.3%29'/%3E%3Cellipse cx='97.3' cy='85.6' rx='4.5' ry='7.0' transform='rotate%2872 97.3 85.6%29'/%3E%3Cellipse cx='94.5' cy='94.2' rx='4.5' ry='7.0' transform='rotate%28144 94.5 94.2%29'/%3E%3Cellipse cx='85.5' cy='94.2' rx='4.5' ry='7.0' transform='rotate%28216 85.5 94.2%29'/%3E%3Cellipse cx='82.7' cy='85.6' rx='4.5' ry='7.0' transform='rotate%28288 82.7 85.6%29'/%3E%3Ccircle cx='90' cy='88' r='3.1' fill-opacity='.6'/%3E%3Cellipse cx='92.0' cy='21.6' rx='2.6' ry='4.0' transform='rotate%280 92.0 21.6%29'/%3E%3Cellipse cx='96.2' cy='24.6' rx='2.6' ry='4.0' transform='rotate%2872 96.2 24.6%29'/%3E%3Cellipse cx='94.6' cy='29.6' rx='2.6' ry='4.0' transform='rotate%28144 94.6 29.6%29'/%3E%3Cellipse cx='89.4' cy='29.6' rx='2.6' ry='4.0' transform='rotate%28216 89.4 29.6%29'/%3E%3Cellipse cx='87.8' cy='24.6' rx='2.6' ry='4.0' transform='rotate%28288 87.8 24.6%29'/%3E%3Ccircle cx='92' cy='26' r='1.8' fill-opacity='.6'/%3E%3Cellipse cx='26.0' cy='91.0' rx='2.9' ry='4.5' transform='rotate%280 26.0 91.0%29'/%3E%3Cellipse cx='30.7' cy='94.5' rx='2.9' ry='4.5' transform='rotate%2872 30.7 94.5%29'/%3E%3Cellipse cx='28.9' cy='100.0' rx='2.9' ry='4.5' transform='rotate%28144 28.9 100.0%29'/%3E%3Cellipse cx='23.1' cy='100.0' rx='2.9' ry='4.5' transform='rotate%28216 23.1 100.0%29'/%3E%3Cellipse cx='21.3' cy='94.5' rx='2.9' ry='4.5' transform='rotate%28288 21.3 94.5%29'/%3E%3Ccircle cx='26' cy='96' r='2.0' fill-opacity='.6'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cellipse cx='30.0' cy='22.1' rx='5.8' ry='9.0' transform='rotate%280 30.0 22.1%29'/%3E%3Cellipse cx='39.4' cy='28.9' rx='5.8' ry='9.0' transform='rotate%2872 39.4 28.9%29'/%3E%3Cellipse cx='35.8' cy='40.0' rx='5.8' ry='9.0' transform='rotate%28144 35.8 40.0%29'/%3E%3Cellipse cx='24.2' cy='40.0' rx='5.8' ry='9.0' transform='rotate%28216 24.2 40.0%29'/%3E%3Cellipse cx='20.6' cy='28.9' rx='5.8' ry='9.0' transform='rotate%28288 20.6 28.9%29'/%3E%3Ccircle cx='30' cy='32' r='4.0' fill-opacity='.6'/%3E%3Cellipse cx='90.0' cy='80.3' rx='4.5' ry='7.0' transform='rotate%280 90.0 80.3%29'/%3E%3Cellipse cx='97.3' cy='85.6' rx='4.5' ry='7.0' transform='rotate%2872 97.3 85.6%29'/%3E%3Cellipse cx='94.5' cy='94.2' rx='4.5' ry='7.0' transform='rotate%28144 94.5 94.2%29'/%3E%3Cellipse cx='85.5' cy='94.2' rx='4.5' ry='7.0' transform='rotate%28216 85.5 94.2%29'/%3E%3Cellipse cx='82.7' cy='85.6' rx='4.5' ry='7.0' transform='rotate%28288 82.7 85.6%29'/%3E%3Ccircle cx='90' cy='88' r='3.1' fill-opacity='.6'/%3E%3Cellipse cx='92.0' cy='21.6' rx='2.6' ry='4.0' transform='rotate%280 92.0 21.6%29'/%3E%3Cellipse cx='96.2' cy='24.6' rx='2.6' ry='4.0' transform='rotate%2872 96.2 24.6%29'/%3E%3Cellipse cx='94.6' cy='29.6' rx='2.6' ry='4.0' transform='rotate%28144 94.6 29.6%29'/%3E%3Cellipse cx='89.4' cy='29.6' rx='2.6' ry='4.0' transform='rotate%28216 89.4 29.6%29'/%3E%3Cellipse cx='87.8' cy='24.6' rx='2.6' ry='4.0' transform='rotate%28288 87.8 24.6%29'/%3E%3Ccircle cx='92' cy='26' r='1.8' fill-opacity='.6'/%3E%3Cellipse cx='26.0' cy='91.0' rx='2.9' ry='4.5' transform='rotate%280 26.0 91.0%29'/%3E%3Cellipse cx='30.7' cy='94.5' rx='2.9' ry='4.5' transform='rotate%2872 30.7 94.5%29'/%3E%3Cellipse cx='28.9' cy='100.0' rx='2.9' ry='4.5' transform='rotate%28144 28.9 100.0%29'/%3E%3Cellipse cx='23.1' cy='100.0' rx='2.9' ry='4.5' transform='rotate%28216 23.1 100.0%29'/%3E%3Cellipse cx='21.3' cy='94.5' rx='2.9' ry='4.5' transform='rotate%28288 21.3 94.5%29'/%3E%3Ccircle cx='26' cy='96' r='2.0' fill-opacity='.6'/%3E%3C/svg%3E");-webkit-mask-size:120px 120px;mask-size:120px 120px}
+[data-pat="wellen"] > .pat{display:block;--tile:80px;-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='40' viewBox='0 0 80 40'%3E%3Cpath d='M0 20 Q20 6 40 20 T80 20' fill='none' stroke='black' stroke-width='2.2'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='40' viewBox='0 0 80 40'%3E%3Cpath d='M0 20 Q20 6 40 20 T80 20' fill='none' stroke='black' stroke-width='2.2'/%3E%3C/svg%3E");-webkit-mask-size:80px 40px;mask-size:80px 40px}
+[data-pat="blasen"] > .pat{display:block;--tile:160px;-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cg fill='none' stroke='black' stroke-width='2'%3E%3Ccircle cx='40' cy='44' r='26'/%3E%3Ccircle cx='122' cy='30' r='12'/%3E%3Ccircle cx='112' cy='112' r='34'/%3E%3Ccircle cx='34' cy='128' r='10'/%3E%3Ccircle cx='76' cy='82' r='6'/%3E%3C/g%3E%3Ccircle cx='31' cy='34' r='5' fill-opacity='.6'/%3E%3Ccircle cx='100' cy='98' r='6' fill-opacity='.6'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cg fill='none' stroke='black' stroke-width='2'%3E%3Ccircle cx='40' cy='44' r='26'/%3E%3Ccircle cx='122' cy='30' r='12'/%3E%3Ccircle cx='112' cy='112' r='34'/%3E%3Ccircle cx='34' cy='128' r='10'/%3E%3Ccircle cx='76' cy='82' r='6'/%3E%3C/g%3E%3Ccircle cx='31' cy='34' r='5' fill-opacity='.6'/%3E%3Ccircle cx='100' cy='98' r='6' fill-opacity='.6'/%3E%3C/svg%3E");-webkit-mask-size:160px 160px;mask-size:160px 160px}
+[data-pat="streifen"] > .pat{display:block;--tile:28px;-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cpath d='M-7 7 L7 -7 M0 28 L28 0 M21 35 L35 21' stroke='black' stroke-width='3'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cpath d='M-7 7 L7 -7 M0 28 L28 0 M21 35 L35 21' stroke='black' stroke-width='3'/%3E%3C/svg%3E");-webkit-mask-size:28px 28px;mask-size:28px 28px}
+[data-pat="punkte"] > .pat{display:block;--tile:26px;-webkit-mask-image:radial-gradient(circle,#000 2px,transparent 2.6px);mask-image:radial-gradient(circle,#000 2px,transparent 2.6px);-webkit-mask-size:26px 26px;mask-size:26px 26px}
+[data-pat="raster"] > .pat{display:block;--tile:34px;-webkit-mask-image:linear-gradient(#000 1.5px,transparent 1.5px),linear-gradient(90deg,#000 1.5px,transparent 1.5px);mask-image:linear-gradient(#000 1.5px,transparent 1.5px),linear-gradient(90deg,#000 1.5px,transparent 1.5px);-webkit-mask-size:34px 34px;mask-size:34px 34px}
+[data-pat="sterne"] > .pat{animation:patDrift 70s linear infinite,patTwinkle 4s ease-in-out infinite alternate}
+@keyframes patDrift{from{transform:translate3d(0,0,0)}to{transform:translate3d(calc(var(--tile) * 3),calc(var(--tile) * 2),0)}}
+@keyframes patTwinkle{from{opacity:calc(var(--pat-op,.18) * .55)}to{opacity:var(--pat-op,.18)}}
+:root[data-theme="dark"]{--pc:var(--b2)}
+:root[data-theme="light"]{--pc:var(--b4)}
+/* Vorschau-Kacheln in den Einstellungen */
+.pat-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.pat-tile{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:.78em;color:var(--muted);font-weight:600}
+.pt-bg{position:relative;display:block;width:100%;aspect-ratio:4/3;border-radius:16px;overflow:hidden;
+  background:radial-gradient(70% 60% at 25% 20%,color-mix(in srgb,var(--b1) 70%,transparent),transparent 70%),linear-gradient(165deg,var(--bg2),var(--bg3) 55%,var(--bg));
+  box-shadow:inset 0 0 0 1px var(--glass-border);transition:transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .2s}
+.pt-bg .pat{inset:-50%;transform:scale(.5);animation:none;opacity:max(var(--pat-op,.18),.32)}
+.pat-tile.on{color:var(--text)}
+.pat-tile.on .pt-bg{box-shadow:0 0 0 2.5px var(--text),0 4px 14px color-mix(in srgb,var(--b1) 45%,transparent);transform:scale(1.04)}
+.swatch.auto{background:conic-gradient(#39a0ff,#8b6cff,#ff7eb6,#ffaa33,#22c79b,#39a0ff)!important;display:grid;place-items:center;font-size:11px;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.4)}
 body.no-anim .bg *,body.no-anim h1{animation:none!important}
 @media (prefers-reduced-motion:reduce){.bg *,h1{animation:none!important}}
 
@@ -341,7 +367,7 @@ body.sheet-open .app{transform:scale(.955);filter:brightness(.8);opacity:.9}
 ::placeholder{color:var(--muted);opacity:.85}
 /* Ladebildschirm */
 #splash{position:fixed;top:-200px;bottom:-200px;left:0;right:0;z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
-  background:radial-gradient(55% 32% at 50% 50%,color-mix(in srgb,var(--a1) 50%,transparent),transparent 72%),var(--base);
+  background:radial-gradient(55% 32% at 50% 50%,color-mix(in srgb,var(--b1) 50%,transparent),transparent 72%),var(--base);
   transition:opacity .4s ease,visibility .4s}
 #splash.hide{opacity:0;visibility:hidden;pointer-events:none}
 #splash.instant{transition:none}
@@ -365,6 +391,7 @@ body.sheet-open .app{transform:scale(.955);filter:brightness(.8);opacity:.9}
 </div>
 <div class="bg" aria-hidden="true">
   <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="blob b4"></div>
+  <div class="pat"></div>
   <div class="sparkles"></div>
 </div>
 
@@ -476,9 +503,15 @@ body.sheet-open .app{transform:scale(.955);filter:brightness(.8);opacity:.9}
 'use strict';
 
 /* ================= Helfer ================= */
-const APP_VERSION = '1.25'; // interne Nummer nur zum Erkennen von Updates – bei JEDEM Upload erhöhen
+const APP_VERSION = '1.28';
+// Wurde die App über eine Benachrichtigung geöffnet? (vor dem Aufräumen der Adresse merken)
+const OPEN_TAB = new URLSearchParams(location.search).get('open') || (location.hash === '#updates' ? 'updates' : null); // interne Nummer nur zum Erkennen von Updates – bei JEDEM Upload erhöhen
 // Bei jedem Update oben einen Eintrag ergänzen. Typ: 'neu' | 'besser' | 'fix'
 const CHANGELOG = [
+  { v: '1.11', date: '2026-11-11', items: [
+    ['neu', 'Hintergrund-Muster: Sterne, Herzen, Blüten, Punkte, Wellen, Blasen, Raster und Streifen.'],
+    ['neu', 'Eigene Hintergrundfarbe – unabhängig von der App-Farbe.'],
+    ['neu', 'Benachrichtigungen bei neuen Updates (unter Optionen einschalten).'] ] },
   { v: '1.10', date: '2026-11-10', items: [
     ['neu', 'An vergangenen Tagen im Kalender kann nichts Neues mehr eingetragen werden. Alte Termine bleiben, bis du sie selbst löschst.'] ] },
   { v: '1.9', date: '2026-11-10', items: [
@@ -525,7 +558,7 @@ const groupBy = (arr, key) => arr.reduce((m, x) => { (m[x[key]] = m[x[key]] || [
 
 /* ================= Speicher ================= */
 const DATA_KEY = 'lt.data.v1', SET_KEY = 'lt.settings.v1', FILE = 'lenas-tagebuch.json';
-const DEFAULTS = { theme: 'system', accent: 'unendlich', anim: true, glass: 0.42, font: 'normal', weekStart: 1,
+const DEFAULTS = { pushOn: false, pushEndpoint: '', deviceId: '', theme: 'system', accent: 'unendlich', pattern: 'fliessend', bgColor: 'auto', patOp: 0.2, anim: true, glass: 0.42, font: 'normal', weekStart: 1,
   todayHint: true, owner: '', repo: '', token: '', lastSync: 0, tab: 'notes' };
 
 function load(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } }
@@ -575,12 +608,17 @@ const ACCENTS = {
 };
 const EV_COLORS = { accent: null, rosa: '#ff6fae', mint: '#22c79b', orange: '#ff9f43', lila: '#8b6cff', rot: '#ff5c6c' };
 const evColor = c => EV_COLORS[c] || (ACCENTS[S.accent] || ACCENTS.unendlich).a1;
+const PATTERNS = { fliessend: 'Fließend', sterne: 'Sterne', herzen: 'Herzen', blueten: 'Blüten', punkte: 'Punkte', wellen: 'Wellen', blasen: 'Blasen', raster: 'Raster', streifen: 'Streifen' };
 const mq = window.matchMedia('(prefers-color-scheme: dark)');
 
 function applySettings() {
   const r = document.documentElement;
   const a = ACCENTS[S.accent] || ACCENTS.unendlich;
   ['a1','a2','a3','a4'].forEach(k => r.style.setProperty('--' + k, a[k]));
+  const bgc = S.bgColor !== 'auto' && ACCENTS[S.bgColor] ? ACCENTS[S.bgColor] : a;
+  ['1','2','3','4'].forEach(k => r.style.setProperty('--b' + k, bgc['a' + k]));
+  $('.bg').dataset.pat = PATTERNS[S.pattern] ? S.pattern : 'fliessend';
+  r.style.setProperty('--pat-op', S.patOp);
   const dark = S.theme === 'dark' || (S.theme === 'system' && mq.matches);
   r.dataset.theme = dark ? 'dark' : 'light';
   // Grundfarbe auch als Statusleisten-/Systemfarbe setzen (iOS malt den Startbalken in dieser Farbe)
@@ -973,13 +1011,32 @@ function renderSettings(focus) {
           `<button type="button" class="swatch ${S.accent === k ? 'on' : ''}" data-accent="${k}" aria-label="${a.name}" style="background:radial-gradient(circle at 50% 50%,#fff 0%,${a.a3} 18%,${a.a2} 40%,${a.a1} 65%,${a.a4} 100%)"></button>`).join('')}</div>
         <div class="hint" id="sAccentName">${esc((ACCENTS[S.accent] || ACCENTS.unendlich).name)}</div>
       </div>
+      <div class="box">${toggleRow('sAnim', 'Animierter Hintergrund', 'Farben und Muster bewegen sich sanft', S.anim)}</div>
+    </div>
+    <div class="group"><h3>Hintergrund</h3>
+      <div class="field"><span>Muster</span>
+        <div class="pat-grid" id="sPats">${Object.entries(PATTERNS).map(([k, n]) =>
+          `<button type="button" class="pat-tile ${S.pattern === k ? 'on' : ''}" data-patsel="${k}"><span class="pt-bg" data-pat="${k}"><i class="pat"></i></span>${n}</button>`).join('')}</div>
+      </div>
+      <div class="field"><span>Hintergrundfarbe</span>
+        <div class="swatches" id="sBgCols"><button type="button" class="swatch auto ${S.bgColor === 'auto' ? 'on' : ''}" data-bgc="auto" aria-label="Wie App-Farbe">A</button>${Object.entries(ACCENTS).map(([k, a]) =>
+          `<button type="button" class="swatch ${S.bgColor === k ? 'on' : ''}" data-bgc="${k}" aria-label="${a.name}" style="background:linear-gradient(160deg,${a.a2},${a.a1} 50%,${a.a4})"></button>`).join('')}</div>
+        <div class="hint" id="sBgName">${S.bgColor === 'auto' ? 'Wie die App-Farbe' : esc(ACCENTS[S.bgColor].name)}</div>
+      </div>
+      <div class="field"><span>Muster-Deutlichkeit</span><input type="range" id="sPatOp" min="0.06" max="0.5" step="0.01" value="${S.patOp}"><div class="hint">Links: zart · Rechts: deutlich</div></div>
+    </div>
+    <div class="group"><h3>Oberfläche</h3>
       <div class="field"><span>Glas-Effekt</span><input type="range" id="sGlass" min="0.15" max="0.8" step="0.01" value="${S.glass}"><div class="hint">Links: durchsichtiger · Rechts: kräftiger</div></div>
       <div class="field"><span>Schriftgröße</span>${seg('font', [['klein', 'Klein'], ['normal', 'Normal'], ['gross', 'Groß']])}</div>
-      <div class="box">${toggleRow('sAnim', 'Animierter Hintergrund', 'Sanft fließende Farben', S.anim)}</div>
     </div>
     <div class="group"><h3>Kalender</h3>
       <div class="field"><span>Woche beginnt am</span>${seg('weekStart', [[1, 'Montag'], [0, 'Sonntag']])}</div>
       <div class="box">${toggleRow('sHint', 'Tagesübersicht', 'Zeigt oben heutige Termine & Aufgaben', S.todayHint)}</div>
+    </div>
+    <div class="group" id="pushGroup"><h3>Benachrichtigungen</h3>
+      <div class="box">${toggleRow('sPush', 'Neue Updates', 'Nachricht, wenn es eine neue Version gibt', S.pushOn)}</div>
+      <div class="sync-status" id="pushStatus"></div>
+      ${S.pushOn ? '<button type="button" class="text-btn" id="sPushTest">Test-Nachricht anzeigen</button>' : ''}
     </div>
     <div class="group" id="syncGroup"><h3>Synchronisation (iPhone ↔ iPad)</h3>
       <p class="hint">Alles wird im privaten Repository <b>${esc(GH_OWNER)}/${esc(GH_REPO)}</b> gespeichert. Auf jedem Gerät einmal den Token eintragen – fertig.</p>
@@ -999,6 +1056,19 @@ function renderSettings(focus) {
       $$('button', sb.parentElement).forEach(b => b.classList.toggle('on', b === sb));
       return;
     }
+    const ps = e.target.closest('[data-patsel]');
+    if (ps) {
+      S.pattern = ps.dataset.patsel; saveSettings(); applySettings();
+      $$('#sPats .pat-tile', sh).forEach(b => b.classList.toggle('on', b === ps));
+      return;
+    }
+    const bc = e.target.closest('[data-bgc]');
+    if (bc) {
+      S.bgColor = bc.dataset.bgc; saveSettings(); applySettings();
+      $$('#sBgCols .swatch', sh).forEach(b => b.classList.toggle('on', b === bc));
+      $('#sBgName', sh).textContent = S.bgColor === 'auto' ? 'Wie die App-Farbe' : ACCENTS[S.bgColor].name;
+      return;
+    }
     const ac = e.target.closest('[data-accent]');
     if (ac) {
       S.accent = ac.dataset.accent; saveSettings(); applySettings(); render();
@@ -1007,7 +1077,25 @@ function renderSettings(focus) {
     }
   });
   $('#sGlass', sh).addEventListener('input', e => { S.glass = Number(e.target.value); applySettings(); saveSettings(); });
+  $('#sPatOp', sh).addEventListener('input', e => { S.patOp = Number(e.target.value); applySettings(); saveSettings(); });
   $('#sAnim', sh).addEventListener('change', e => { S.anim = e.target.checked; saveSettings(); applySettings(); });
+  $('#sPush', sh).addEventListener('change', async e => {
+    const st = $('#pushStatus', sh), on = e.target.checked;
+    st.className = 'sync-status'; st.textContent = on ? 'Wird eingerichtet …' : 'Wird ausgeschaltet …';
+    try {
+      if (on) { await enablePush(); toast('Benachrichtigungen an ✓'); } else { await disablePush(); toast('Benachrichtigungen aus'); }
+      renderSettings('push');
+    } catch (err) {
+      e.target.checked = S.pushOn;
+      st.classList.add('err'); st.textContent = '⚠️ ' + ((err && err.message) || 'Hat nicht geklappt.');
+    }
+  });
+  const pt = $('#sPushTest', sh);
+  if (pt) pt.addEventListener('click', async () => {
+    try { const reg = await navigator.serviceWorker.ready;
+      await reg.showNotification('Lenas Tagebuch', { body: 'So sieht eine Update-Nachricht aus ✨', icon: 'icons/icon-192.png', badge: 'icons/icon-192.png', tag: 'test' });
+    } catch { toast('Test hat nicht geklappt'); }
+  });
   $('#sHint', sh).addEventListener('change', e => { S.todayHint = e.target.checked; saveSettings(); renderHint(); });
 
   $('#sConnect', sh).addEventListener('click', async () => {
@@ -1025,6 +1113,7 @@ function renderSettings(focus) {
 
   updateSyncStatus();
   if (focus === 'sync') setTimeout(() => $('#syncGroup', sh).scrollIntoView({ behavior: 'smooth', block: 'start' }), 350);
+  if (focus === 'push') { const g = $('#pushGroup', sh); setTimeout(() => g.scrollIntoView({ block: 'center' }), 30); }
 }
 
 /* ================= GitHub-Sync ================= */
@@ -1200,6 +1289,69 @@ const LOCKED = (() => {
   return true;
 })();
 
+/* ================= Push bei neuen Updates ================= */
+const VAPID_PUBLIC = 'BOoCkVQJDPO3JN1-SehY6M6JMyG3Shk2CVS5Htu9Ydte2NNA2XrVfZ8C5Aaztai0eqLpBh5-fIts6WgIR-VLrvo';
+const PUSH_FILE = 'push-abos.json';
+const pushSupported = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+function b64urlToBytes(b) {
+  const pad = '='.repeat((4 - b.length % 4) % 4), raw = atob((b + pad).replace(/-/g, '+').replace(/_/g, '/'));
+  return Uint8Array.from(raw, c => c.charCodeAt(0));
+}
+async function ghPath(path, method, body) {
+  const headers = { 'Authorization': 'Bearer ' + S.token, 'Accept': 'application/vnd.github+json' };
+  if (body) headers['Content-Type'] = 'application/json';
+  return fetch(`${API}/repos/${encodeURIComponent(S.owner)}/${encodeURIComponent(S.repo)}/contents/${path}`,
+    { method, headers, cache: 'no-store', body: body ? JSON.stringify(body) : undefined });
+}
+async function editPushFile(change) {
+  for (let i = 0; i < 4; i++) {
+    const r = await ghPath(PUSH_FILE, 'GET');
+    let list = [], sha;
+    if (r.ok) { const j = await r.json(); sha = j.sha; try { list = JSON.parse(b64dec(j.content)); } catch {} }
+    else if (r.status !== 404) throw await ghError(r);
+    const body = { message: 'Benachrichtigungs-Geräte aktualisiert', content: b64enc(JSON.stringify(change(Array.isArray(list) ? list : []), null, 1)) };
+    if (sha) body.sha = sha;
+    const w = await ghPath(PUSH_FILE, 'PUT', body);
+    if (w.ok) return;
+    if (w.status !== 409 && w.status !== 422) throw await ghError(w);
+  }
+  throw new Error('Gleichzeitige Änderung – bitte nochmal versuchen.');
+}
+const deviceName = () => { const ua = navigator.userAgent;
+  return /iphone/i.test(ua) ? 'iPhone' : (/ipad/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) ? 'iPad' : 'Gerät'; };
+async function savePushSub(sub) {
+  const j = sub.toJSON();
+  if (!S.deviceId) S.deviceId = uid();
+  await editPushFile(list => [...list.filter(x => x.id !== S.deviceId && x.endpoint !== j.endpoint),
+    { id: S.deviceId, device: deviceName(), endpoint: j.endpoint, keys: j.keys, added: new Date().toISOString() }]);
+  S.pushOn = true; S.pushEndpoint = j.endpoint; saveSettings();
+}
+async function enablePush() {
+  if (!pushSupported()) throw new Error('Geht nur, wenn die App vom Home-Bildschirm geöffnet wurde.');
+  if (!isConfigured()) throw new Error('Bitte zuerst unten bei „Synchronisation" den Token eintragen.');
+  const perm = await Notification.requestPermission(); // muss direkt nach dem Antippen kommen
+  if (perm !== 'granted') throw new Error('Nicht erlaubt. Du kannst es in den iPhone-Einstellungen unter „Mitteilungen" → „Tagebuch" einschalten.');
+  const reg = await navigator.serviceWorker.ready;
+  let sub = await reg.pushManager.getSubscription();
+  if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64urlToBytes(VAPID_PUBLIC) });
+  await savePushSub(sub);
+}
+async function disablePush() {
+  try { const reg = await navigator.serviceWorker.ready; const sub = await reg.pushManager.getSubscription(); if (sub) await sub.unsubscribe(); } catch {}
+  if (isConfigured() && S.deviceId) await editPushFile(list => list.filter(x => x.id !== S.deviceId));
+  S.pushOn = false; S.pushEndpoint = ''; saveSettings();
+}
+// Beim Start prüfen, ob das Abo noch stimmt (iOS erneuert es manchmal)
+async function checkPushSub() {
+  if (!S.pushOn || !pushSupported() || !isConfigured()) return;
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.getSubscription();
+    if (!sub || Notification.permission !== 'granted') { S.pushOn = false; saveSettings(); return; }
+    if (sub.endpoint !== S.pushEndpoint) await savePushSub(sub);
+  } catch {}
+}
+
 /* ================= Automatische Updates ================= */
 let pendingUpdate = null, lastCheck = 0, knownTag = null;
 const newer = (a, b) => { const x = String(a).split('.').map(Number), y = String(b).split('.').map(Number);
@@ -1259,13 +1411,14 @@ document.querySelectorAll('.ver').forEach(el => { el.textContent = 'Version ' + 
 applySettings();
 if (!S.seenLog) { S.seenLog = CHANGELOG[0].v; saveSettings(); } // Erststart/Umstellung: nichts als neu markieren
 const hasNew = newer(CHANGELOG[0].v, S.seenLog);
-setTab(TAB_ORDER.includes(S.tab) ? S.tab : 'notes');
+setTab(TAB_ORDER.includes(OPEN_TAB) ? OPEN_TAB : TAB_ORDER.includes(S.tab) ? S.tab : 'notes');
 if (hasNew && S.tab !== 'updates') {
   $('.tabbar').classList.add('has-new');
   if (!LOCKED) setTimeout(() => toast(`✨ Neue Version ${CHANGELOG[0].v} – schau in „Updates"`), 900);
 }
 render(); setSyncState();
 if (isConfigured() && !LOCKED) sync(false);
+if (!LOCKED) setTimeout(checkPushSub, 2500);
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(r => r.update()).catch(() => {}));
 }
