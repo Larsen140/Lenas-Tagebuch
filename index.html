@@ -310,6 +310,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
   padding:11px 18px;border-radius:999px;font-weight:600;font-size:.92em;transition:transform .35s cubic-bezier(.2,.9,.2,1),opacity .3s;max-width:90vw;text-align:center;opacity:0}
 #toast.show{transform:translate(-50%,0);opacity:1}
 /* Installations-Sperre */
+.gate-card .btn{margin-top:14px}
+#pushGate{z-index:210;top:-200px;bottom:-200px;padding-top:calc(200px + env(safe-area-inset-top) + 24px);padding-bottom:calc(200px + env(safe-area-inset-bottom) + 24px);
+  background:radial-gradient(60% 35% at 50% 50%,color-mix(in srgb,var(--b1) 40%,transparent),transparent 72%),var(--base)}
 .gate{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;
   padding:calc(env(safe-area-inset-top) + 24px) 20px calc(env(safe-area-inset-bottom) + 24px);overflow-y:auto}
 .gate-card{width:100%;max-width:420px;padding:28px 22px 24px;text-align:center;animation:fadeUp .5s ease}
@@ -486,6 +489,17 @@ body.sheet-open .app{transform:scale(.955);filter:brightness(.8);opacity:.9}
 
 <div class="watermark">Made by Larsen<br><span class="ver"></span></div>
 
+<div id="pushGate" class="gate hidden">
+  <div class="gate-card glass">
+    <img src="icons/apple-touch-icon.png" alt="">
+    <h2>Mitteilungen erlauben</h2>
+    <p id="pgText">Damit du erfährst, wenn es ein neues Update gibt, muss die App dir Mitteilungen schicken dürfen.</p>
+    <div class="steps hidden" id="pgSteps"></div>
+    <button class="btn full" id="pgBtn">Mitteilungen erlauben</button>
+    <div class="sync-status err" id="pgErr"></div>
+    <div class="gate-foot">Made by Larsen<br><span class="ver"></span></div>
+  </div>
+</div>
 <div id="gate" class="gate hidden">
   <div class="gate-card glass">
     <img src="icons/apple-touch-icon.png" alt="">
@@ -503,7 +517,7 @@ body.sheet-open .app{transform:scale(.955);filter:brightness(.8);opacity:.9}
 'use strict';
 
 /* ================= Helfer ================= */
-const APP_VERSION = '1.28';
+const APP_VERSION = '1.29';
 // Wurde die App über eine Benachrichtigung geöffnet? (vor dem Aufräumen der Adresse merken)
 const OPEN_TAB = new URLSearchParams(location.search).get('open') || (location.hash === '#updates' ? 'updates' : null); // interne Nummer nur zum Erkennen von Updates – bei JEDEM Upload erhöhen
 // Bei jedem Update oben einen Eintrag ergänzen. Typ: 'neu' | 'besser' | 'fix'
@@ -1034,9 +1048,9 @@ function renderSettings(focus) {
       <div class="box">${toggleRow('sHint', 'Tagesübersicht', 'Zeigt oben heutige Termine & Aufgaben', S.todayHint)}</div>
     </div>
     <div class="group" id="pushGroup"><h3>Benachrichtigungen</h3>
-      <div class="box">${toggleRow('sPush', 'Neue Updates', 'Nachricht, wenn es eine neue Version gibt', S.pushOn)}</div>
-      <div class="sync-status" id="pushStatus"></div>
-      ${S.pushOn ? '<button type="button" class="text-btn" id="sPushTest">Test-Nachricht anzeigen</button>' : ''}
+      <div class="sync-status ok">✓ Mitteilungen bei neuen Updates sind an</div>
+      ${S.pushEndpoint ? '' : '<p class="hint">Wird mit GitHub verbunden, sobald unten der Token eingetragen ist.</p>'}
+      <button type="button" class="text-btn" id="sPushTest">Test-Nachricht anzeigen</button>
     </div>
     <div class="group" id="syncGroup"><h3>Synchronisation (iPhone ↔ iPad)</h3>
       <p class="hint">Alles wird im privaten Repository <b>${esc(GH_OWNER)}/${esc(GH_REPO)}</b> gespeichert. Auf jedem Gerät einmal den Token eintragen – fertig.</p>
@@ -1079,17 +1093,6 @@ function renderSettings(focus) {
   $('#sGlass', sh).addEventListener('input', e => { S.glass = Number(e.target.value); applySettings(); saveSettings(); });
   $('#sPatOp', sh).addEventListener('input', e => { S.patOp = Number(e.target.value); applySettings(); saveSettings(); });
   $('#sAnim', sh).addEventListener('change', e => { S.anim = e.target.checked; saveSettings(); applySettings(); });
-  $('#sPush', sh).addEventListener('change', async e => {
-    const st = $('#pushStatus', sh), on = e.target.checked;
-    st.className = 'sync-status'; st.textContent = on ? 'Wird eingerichtet …' : 'Wird ausgeschaltet …';
-    try {
-      if (on) { await enablePush(); toast('Benachrichtigungen an ✓'); } else { await disablePush(); toast('Benachrichtigungen aus'); }
-      renderSettings('push');
-    } catch (err) {
-      e.target.checked = S.pushOn;
-      st.classList.add('err'); st.textContent = '⚠️ ' + ((err && err.message) || 'Hat nicht geklappt.');
-    }
-  });
   const pt = $('#sPushTest', sh);
   if (pt) pt.addEventListener('click', async () => {
     try { const reg = await navigator.serviceWorker.ready;
@@ -1228,6 +1231,7 @@ async function sync(manual, fast) {
     }
     if (!ok) throw new Error('Gleichzeitige Änderung – bitte gleich nochmal versuchen.');
     S.lastSync = now(); saveSettings(); syncErr = null;
+    if (S.pushOn && !S.pushEndpoint) checkPushSub();
     if (manual) toast('Synchronisiert ✓');
   } catch (e) {
     syncErr = (e && e.message) ? (e.message === 'Failed to fetch' || e.message === 'Load failed' ? 'Keine Verbindung zu GitHub.' : e.message) : 'Sync-Fehler';
@@ -1327,30 +1331,58 @@ async function savePushSub(sub) {
   S.pushOn = true; S.pushEndpoint = j.endpoint; saveSettings();
 }
 async function enablePush() {
-  if (!pushSupported()) throw new Error('Geht nur, wenn die App vom Home-Bildschirm geöffnet wurde.');
-  if (!isConfigured()) throw new Error('Bitte zuerst unten bei „Synchronisation" den Token eintragen.');
   const perm = await Notification.requestPermission(); // muss direkt nach dem Antippen kommen
-  if (perm !== 'granted') throw new Error('Nicht erlaubt. Du kannst es in den iPhone-Einstellungen unter „Mitteilungen" → „Tagebuch" einschalten.');
+  if (perm !== 'granted') throw new Error('denied');
   const reg = await navigator.serviceWorker.ready;
   let sub = await reg.pushManager.getSubscription();
   if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64urlToBytes(VAPID_PUBLIC) });
-  await savePushSub(sub);
+  S.pushOn = true; saveSettings();
+  if (isConfigured()) { try { await savePushSub(sub); } catch {} } // sonst später, sobald der Token da ist
 }
-async function disablePush() {
-  try { const reg = await navigator.serviceWorker.ready; const sub = await reg.pushManager.getSubscription(); if (sub) await sub.unsubscribe(); } catch {}
-  if (isConfigured() && S.deviceId) await editPushFile(list => list.filter(x => x.id !== S.deviceId));
-  S.pushOn = false; S.pushEndpoint = ''; saveSettings();
-}
-// Beim Start prüfen, ob das Abo noch stimmt (iOS erneuert es manchmal)
+// Bei GitHub hinterlegen bzw. erneuern (iOS tauscht das Abo manchmal aus)
 async function checkPushSub() {
-  if (!S.pushOn || !pushSupported() || !isConfigured()) return;
+  if (!pushSupported() || !isConfigured() || Notification.permission !== 'granted') return;
   try {
     const reg = await navigator.serviceWorker.ready;
     const sub = await reg.pushManager.getSubscription();
-    if (!sub || Notification.permission !== 'granted') { S.pushOn = false; saveSettings(); return; }
-    if (sub.endpoint !== S.pushEndpoint) await savePushSub(sub);
+    if (sub && sub.endpoint !== S.pushEndpoint) await savePushSub(sub);
   } catch {}
 }
+// ---- Pflicht: ohne erlaubte Mitteilungen keine App ----
+async function pushReady() {
+  if (Notification.permission !== 'granted') return false;
+  try { const reg = await navigator.serviceWorker.ready; return !!(await reg.pushManager.getSubscription()); } catch { return false; }
+}
+function showPushGate(denied) {
+  const g = $('#pushGate');
+  $('#pgErr').textContent = '';
+  const ipad = /ipad/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (denied) {
+    $('#pgText').textContent = 'Mitteilungen sind für diese App ausgeschaltet. Bitte schalte sie in den Einstellungen wieder ein:';
+    $('#pgSteps').innerHTML = [`Öffne die <b>Einstellungen</b> ${ipad ? 'am iPad' : 'am iPhone'}`, 'Tippe auf <b>Mitteilungen</b>', 'Wähle <b>Tagebuch</b>', 'Schalte <b>Mitteilungen erlauben</b> ein und komm zurück']
+      .map((t, i) => `<div class="step"><span class="n">${i + 1}</span><span>${t}</span></div>`).join('');
+    $('#pgSteps').classList.remove('hidden'); $('#pgBtn').textContent = 'Erneut prüfen';
+  } else {
+    $('#pgText').textContent = 'Damit du erfährst, wenn es ein neues Update gibt, muss die App dir Mitteilungen schicken dürfen.';
+    $('#pgSteps').classList.add('hidden'); $('#pgBtn').textContent = 'Mitteilungen erlauben';
+  }
+  g.classList.remove('hidden');
+}
+async function checkPushGate() {
+  const installed = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
+  if (LOCKED || !installed || !pushSupported()) return; // nur in der installierten App mit Push-Unterstützung
+  if (await pushReady()) { $('#pushGate').classList.add('hidden'); checkPushSub(); return; }
+  showPushGate(Notification.permission === 'denied');
+}
+$('#pgBtn').addEventListener('click', async () => {
+  if (Notification.permission === 'denied') { checkPushGate(); return; }
+  try { await enablePush(); $('#pushGate').classList.add('hidden'); toast('Mitteilungen an ✓'); }
+  catch (e) {
+    if (Notification.permission === 'denied' || (e && e.message === 'denied')) showPushGate(true);
+    else $('#pgErr').textContent = '⚠️ Hat nicht geklappt – bitte nochmal versuchen.';
+  }
+});
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkPushGate(); });
 
 /* ================= Automatische Updates ================= */
 let pendingUpdate = null, lastCheck = 0, knownTag = null;
@@ -1418,7 +1450,7 @@ if (hasNew && S.tab !== 'updates') {
 }
 render(); setSyncState();
 if (isConfigured() && !LOCKED) sync(false);
-if (!LOCKED) setTimeout(checkPushSub, 2500);
+if (!LOCKED) setTimeout(checkPushGate, 300);
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(r => r.update()).catch(() => {}));
 }
